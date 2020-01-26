@@ -1,0 +1,676 @@
+RHEL, CentOS 8
+#                                          Module 1
+Console
+Ctrl+Shift+'+'                                    bigger font
+Ctrl+'-'                                          smaller font
+<tab>                                  automatically complete command
+Ctrl + 'a'                             into begin of command line
+
+pwd                                    show current directory
+su -                                   open shell as a root user
+exit                                   close root session
+free -m                                how much memory have
+cat /etc/redhat-release                show OS release
+
+Help
+ls -- help                             showing help for ls command
+ls -- help | less                      send to the less command – less - pager
+ls -- help | wc                        show amount of characters
+ls -l                                  long listing
+man ls                                 information of the command
+
+cd /usr/share/doc                      documentation for packages
+cd -                                   back to prev folder
+
+Man
+1. User commands
+5. Configurations files
+7. Different topics
+8. Sysadmin files
+
+man man                                 man in all sections
+man 7 intro                             information Intro in 7 section
+/alias                                  to search through the man page
+n                                       next one
+q                                       quit from the man page
+
+man hier                                description of the file system hierarchy
+man lvcreate                            description of command
+    /examples                           show examples
+
+
+su –                                    become root, switch user identity
+mandb                                   generate man database
+man –k                                  find man page based on a keyword
+man –k user | grep 8 | grep create      more flexible filter
+man –k password | grep 8
+man useradd
+G                                       to the end of the file
+
+
+I/O Redirections and Pipes
+
+man –k user | wc                        count amount of lines
+man –k user | grep 8                    show every lines contains 8
+
+ls > lsfile                             redirect to lsfile new file
+cat lsfile                              show lsfile
+
+who > lsfile                            overwrite current contents of lsfile
+ls >> lsfile                            add output to existing lsfile
+
+ls ljdsfohl 2> errors                   redirect errors to a file
+grep hello /proc/* 2> /dev/null         show hello and put errors to null
+grep -R student /ect 2> /dev/null       show with recursive subdir and put errors to null
+ls -l /etc | wc                         show how many files, how many lines
+ls -l /etc | less                       show line by line
+ls -l /etc | grep host                  show with host in name
+
+
+Environment variables
+
+env | less
+LANG=fr_FR.utf-8                        change language to French
+LANG=en_EN.utf-8                        change language to English
+
+VIM
+
+i,a,o or Ins                enter Insert mode, append mode, open new line
+Esc                         back to Command mode
+:wq!                        Write quit and don’t worry about anything
+:q!                         quit without anything
+ZZ (shift + zz)             same write and quit
+dd                          remove a complete line (cut)
+!dd                         repeat the last command from history
+d$                          remove to the end of the line
+yy                          copying
+p                           paste
+v                           mark a block
+ -d                         delete block
+ -y                         copy block
+ -p                         paste to somewhere else
+u                           undo
+Ctrl+r                      redo
+
+gg                          navigate to the first line
+G                                    in the end of the file
+/text                       search
+?text                       search in opposite direction
+^                           bring courser in the begin line
+$                                         in the end of line
+:%s/old/new/g               text old replace with a text new, global substitute
+
+
+VI issue
+If you close terminal without saving file, you can found a swap file when open this file in vi again.
+You can use ‘r’ for recovery from swap file.
+Then next time ‘d’ to delete the swap file.
+
+Shell
+Command line. Bash is the command interpreter.
+history                    to repeat previous commands
+<tab>                      to complete the command
+!32                        repeat command 32
+!f                         repeat last command from f
+Ctrl + r                   reverse-i-search from ‘user’, yo can search command from history
+
+Globbing and Wildcards
+
+man 7 glob                 all possibilities to use globbing
+ ls host*                  show all files from host
+ ls ?ost                   first character be anything
+ ls [hm]ost                host or most
+ ls [!hm]ost               all without h or m
+ ls [0-9][0-9]script       anything with two numbers followed script
+
+Examples:
+ ls –d /etc/a*             show just paths with names
+ ls –d /etc/a*a            from a to a
+ ls /etc/a?a*              from a one any to a and all above
+ ls ?ost                   show all (most post host) files
+ touch script{0..100}      will create 100 files from 0
+ ls script[0-9][0-9]       show from 10 to 99
+
+touch most host post       touch creating an empty file
+
+#                         Cockpit
+# Monitoring and Administering
+systemctl enable --now cockpit.socket        # Enable Cockpit
+systemctl status cockpit.socket              # show status
+
+localhost:9090                             cockpit interface in browser
+
+#                   File management tasks
+ls                         list, directories and files in current dir
+\ls                        don’t use the colors
+ls –l                      show info about file type
+ls –a                      show all files in the directory
+ls –lrt                    sorting files based on modification time
+cd                         bring to the home dir
+
+dd if=/dev/zero of=100Mfile bs=1M count=100  create a file, 100MB w 0
+
+mkdir <dir>                make dir
+mkdir –p <path>            create in the entire path
+rmdir                      remove dir, it must be empty
+cp                         copy files
+cp /etc/hosts .            copy entire directory
+cp /ect/h* .               copy to current directory
+cp -r /etc/h* .            copy including subdirectory
+mv                         move files
+mv script* scripts/        move to directory here
+rm                         remove files
+rm –r                      including subdirectories
+rm –rf                     without any suggestions, recursive and force
+alias                      command for a specific shell env
+alias h=history            appoint h as history
+
+df                         capacity of disk
+df –h [dir]                capacity of dir in human readable format
+du –sf [dir]               weight of dir
+
+#                    Finding files
+which useradd              find useradd command
+# echo $PATH               we can check where we can find commands
+updatedb                   create db with files paths, needs to be update
+                           cron job updates it once a day
+locate useradd             find all files with this word
+find --help                help for find command
+find / -size +100M         find files and dir with size +100M in /
+find / -type -f -size +100M     just files
+find /tmp -type d          find all directories in /tmp
+find / -size +100M –exec ls –l {} \;    find and execute show information
+find / -size +100M –exec ls –l {} \; 2> /dev/null   without error
+find /etc -size +100c -exec grep -l student {} \; -exec cp {} /tmp \; 2> /dev/null
+find / -user anna
+find / -name "hosts"         all with name hosts
+findmnt                    shows mounted file systems
+
+Create a new user and add passwd
+useradd anna               create a new user
+passwd anna                add a password
+
+# File Hierarchy System
+man hier                   all the inf about FHS
+/                          root, start of the file system
+/boot                      kernel, up and running
+
+/bin                       binaries, users
+/sbin                      system binaries, root user adm the sys
+/lib, /lib64               addit lib files to run /bin & /sbin
+            it links to the /usr directory
+/usrbin              /usrsbin          /usrlib
+/usr like a Program Files on Windows
+
+/home                      user home directories
+/proc                      the inform that was written by the kernel
+
+/var                       for different dervices
+/var/log
+/var/www
+
+#                     Mounts
+
+
+#                      Link
+# hard links point to the inodes
+# symbolic links point to the hard links
+ls –il /etc/hosts               show inode number
+ln /etc/hots comps              create a new hardlink, has a same inode num
+ln /etc/hosts /root/hardhosts
+ls -il /etc/hosts /root/hardhosts  shows identical inode numbers
+                                   we can restore file from a hardlink file
+ln –s /etc/hosts symhosts       create symbolic link, size 10 bytes, just name
+# the symbolic link doesn’t delete when delete it’s hardlink
+# symbolic links very common to link to the file
+# cross-device and directory
+
+#                      Tar
+# Tape archiver
+
+tar -cvf <file> <folder>         create, verbose, filename .tar
+tar czvf                         create with compression   .tgz
+tar cjvf test.tar.bz2 /test      create with bzip compression
+tar -tvf                         show tar file (validate)
+tar -xvf <my_archive>            extract tar archive
+tar -xvf -C                      to switch the output path
+tar cJv <file.xz> <folder>       create, xv compression, view, file
+
+
+tar xvf homes.tar –C /     before extract change dir to /
+zip
+xz
+gzip                       create archive, .gz
+gzip -k <archive>          create and keep original
+gunzip                     unzip the file
+bzip2                      create archive, .bz2
+bunzip2                    unzip the file
+
+#            Work with text files
+more                       original file pager
+less                       forward and backward through the file
+cat                        show file from first str
+cat -A                     show all non printable characters
+cat -b                     number lines
+cat -s                     suppresses repeated empty lines
+cat users | tr [a-z][A-Z]      translate
+tac                        show file from last str, in reversed order
+
+cut –d : –f 1 /etc/passwd              show field from file
+cut –d : –f 1 /etc/passwd | sort –n    sort by numb
+tr                                     translates to uppercase for example
+cut -f 1 -d : /etc/passwd | sort | tr [:lower:] [:upper:]
+
+head /etc/passwd           show first 10 lines of a text file
+head –n 5 /etc/passwd                  5 lines
+tail –f                    show file with live updates, last 10 lines
+tail –n 5 /etc/passwd      show another number of lines
+tail -f /var/log/messages  fresh, show changes in real time
+Ctrl + 'c'                 quit from reader
+
+#                       Work with files
+grep                       find a text in files
+ps aux | grep ssh          show ssh processes
+ps aux | grep syslog       show process syslog running
+grep -i linda *            sensitive to lowercase
+grep -i linda *  2>/dev/null         and move errors to null
+grep -A5 linda /etc/passwd          show line after and -B5 before
+grep -Rl root /etc 2>/dev/null      show in recursive and list
+grep root /etc/passwd
+
+#                     Regular Expressions
+# use with specific tools: grep, vim, awk, sed
+# grep <regExpr> file
+grep b.t regtext                         show b + some symbol + t + something else
+grep 'b.t' regtext                       it needs to be used with quotes
+grep 'b.*t' regtext                      * is repetition operator
+grep 'bo*t' regtext                      we'll see a bt file too
+egrep 'b.?t' regtext                   show extended regular expressions
+
+#Some regular expressions
+^ beginning of the line
+$ end of line
+\< beginning of word
+\> end of word
+* zero or more times
++ one or more times
+? zero or one time
+{n} exactly n times
+
+man 7 regex                              info about reg expressions
+grep 'a*' a*                             regular expressinons and name starts with a
+grep ‘^#’ /etc/sysconfig/sshd            looking line starts with #
+grep – v ‘^#’ /etc/sysconfig/sshd –B 6   without # with before 6 lines
+grep – v –e ‘^#’ –e ‘^$’ /etc/sysconfig/sshd –A 5   empty with after 5
+         -e                                      for multiple pattern
+grep – l ‘^root’ /etc/* 2> /dev/null     show names files with ‘^root’
+grep ‘^…$’ /etc 2> /dev/null            show with start from 3 symbols
+grep '\<root\>' * 2> dev/null           show all root text
+grep '^alex$' *                         show start and end with alex
+
+
+man –k password | grep –e ‘1’ –e ‘8’
+
+awk, sed                                     data extraction and reporting
+awk –F : ‘/user/ { print $4 }’ /etc/passwd       user with 4-th column, -F field separator
+awk –F : ‘/root/ { print $4 }’ /etc/passwd
+ps awk | awk ‘{ print $1 }’                           first column
+ps aux | awk '{print $NF}'                   show the last column
+
+sed                                       stream editor, search and transform text
+sed –i <file>                                 without interactive
+sed –i –e ‘4d’ [file]                     remove specific line in file
+sed –I –e ‘2d;20,25d’ [file]               remove line 2 and 20-25
+sed –n ‘1,5p’ [file]                         show 5 first lines
+sed –n 5p [file]                             show only 5-th line
+sed -i s/four/Four/g <file>               it changes the word to uppercase
+
+#                            Graphical console.
+You can use multi-user graphical consoles from tty1 to tty6.
+Also use ssh in different way.
+Graphical interface is tty1.
+Switch between graphical and multi-user modes
+
+systemctl isolate multi-user.target      use console instead graphical
+alt + F1 (F2-F5)                         switch tty console
+ctrl + alt +F(1 – 5)                     switch consoles
+w                                        show terminal sessions
+systemctl isolate graphical.target       use graphical console
+
+chvt                                  change virtual terminal
+
+# root user is a kernel space user
+# he has earned direct access to all system resources
+su                                       switch user without login out
+su                                    new subshell in your environment
+su -                                     new env, switch to root
+
+# users must be authorized to use sudo
+# authorization through /etc/sudoers and /etc/sudoers.d/*
+# use visudo to edit these files
+# %wheel                           group with users who can use root
+# you can give limited privileges in visudo
+# for example:
+#linda  ALL=/usr/sbin/useradd, /usr/bin/passwd
+
+visudo                             conf sudoers
+/wheel                             search wheel group in file
+# %users                           line conf users rights to shutdown
+vi /etc/group                      conf add a user to wheel
+                                   then restart session, and give root
+id                                 check the groups of current user
+
+sudo                         use command with root rights, not login
+#For example
+sudo useradd bob             add the user
+tail -n 1 /etc/passwd        show that the user was created
+sudo userdel -rf bob
+
+#                             SSH
+# Secure shell
+su –
+systemctl status sshd                   show OpenSSH server status
+ssh [ip] –l user                      connect to remote server as user
+
+#                            SSH keys
+# host key is stored in ~/.ssh/known_hosts
+ssh -X                               or ssh -Y to display graphical screen locally
+ssh-keygen                           configured RSA encrypted pair-key
+ssh-keygen –t dsa                               DSA key
+ssh-copy-id [ip]                     copy public key to remote machine
+
+
+#                          Users and Groups
+# Services, have service accounts (1-999)
+# People, use regular user accounts /bin/bash
+#                                   /sbin/nologin
+root: uid 0
+
+#                            Create user
+# Linux work with user id not with username, don’t change uid
+# User Properties
+# Name, Password, uid, gid, gecos, home dir, default shell
+
+user +<tab> + <tab>                 Show all users commands
+useradd linda                       create a user linda
+tail –n 1 /etc/passwd               show last line in passwd file
+tail –n 1 /etc/shadow               show other property for user
+cd /home                            change dir to home dir
+ls –l                                  show all home dir for users
+ls –al                                 show files in the home dir
+                              it has specific bash conf files for user
+                                         from /etc/skel file
+userdel –f                    remove user even if the user still login
+userdel –r                    with home dir and mail spool
+userdel –rf                   remove user completely
+
+#                       Add user to a group
+usermod                            modify a user account
+usermod -aG wheel user             add user to a group wheel
+# and relogin as user to apply the changes in the file
+
+usermod –c                         add additional description
+usermod –e                             expiration date
+usermod –L                           lock the user account
+usermod –U                          unlock the user account
+usermod –s                        prevent the service account to login
+
+useradd –c ‘a user’ –u 1234 –s /sbin/nologin dave
+grep dave /etc/passwd            found uid, nologin shell
+grep nologin /etc/passwd         show all users with nologin
+
+#                    User Configuration Files
+/etc/default/useradd
+/etc/login.defs                preferred user conf file, default opt
+/etc/skel  $HOME               about home directory
+/etc/passwd                    main conf file for users, primary group
+/etc/shadow                    password management, encr files here
+                               !! - doesn't have password
+/etc/group                     conf groups, show secondary groups for users
+
+
+#                            Create group
+group +<tab> + <tab>             Show all group commands
+groupadd people                  add group
+cat /etc/group                   show all groups
+groupdel <group>                 delete group
+groupmod                         modified a group
+lid -g <groupname>               list users from specific group
+grep <groupname> /ect/group      show the same information
+
+vigr                             specific interface to edit group
+# add users in the group in the end of the group file, then check with
+id user
+
+usermod –g                       new primary group
+usermod –G                       new list of supplementary groups
+usermod –aG people anna          add to group people
+
+#                     Groups, primary, secondary
+Every user needs to be in primary group, -mandatory
+When create user, private group creates automatically, with the same name. It has – ownership.
+Secondary groups have additional permissions, special functions.
+
+id user                      show uid, gid(prim group), groups(sec gr)
+
+#                    Manage password properties
+passwd --help                     show opt to manage password
+passwd –S anna                    show current values for user
+echo P@ssw0rd | passwd --stdin anna    set the passw for anna, not sec
+passwd -l user                       lock user account
+passwd -u user                       unlock user account
+chage anna                           set the aging inf for user
+grep anna /etc/shadow                check all the parameters
+vi /ect/login.defs                   change def val for users
+
+useradd -D                           it shows default settings
+cat /etc/default/useradd                      similar settings
+vim /etc/login.defs                  write default settings for new users
+                                     password settings for example
+cd /etc/skel                         files are created to the user home dir
+
+
+#                    Permissions and Ownership
+# ugo:
+# User    rwx
+# Group   rwx
+# Others  rwx
+# read - files, list - directory
+# write - modify files, delete, create - directory
+# execute -  run a file, changeDir - directory
+
+chmod --help
+chmod <u-g-o> file           have three permissions
+chmod 764 file
+7 read write execute
+6 read write
+5 read execute
+4 read
+2 write
+0 nothing
+
+#                         Permissions
+ls –l                        show user, group, perm owner of files
+chown –R user:group file     change user and group ownership & recursive
+chgrp group file             change group ownership
+chown :group file                        with chown
+
+chmod 777 file               set permissions
+chmod u=rx,g-w,o-x file      change the permissions
+chmod +x file                add perm execute to everybody
+
+
+
+
+#                         umask
+# Every user has umask which describe the perm for the created files,dir
+# default permissions for file are 666
+# default permissions for dir are 777
+# comming from /etc/profile
+# change for specific user -> /home/user/ -> .bash_profile -> add a string: umask 077
+umask 027                 change the default permissions when create new file
+                          640 for files and 750 for dir
+root – 022 – rw-r--r--    it means 666-022=644 for files
+root – 022 – rwxr-xr-r-   it means 777-022=755  for dir
+user – 002 – rwxrwxr-x    for dir
+user – 002 – rw-rw-r--    for files
+
+grep umask * 2>/dev/null         show umask
+vim profile                      config umask by default
+Change spec user umask:
+cd /home/user
+ls –a
+vim .bash_profile              insert here umask 027 as example
+
+#                     Special permissions
+#                      files                      directory
+# suid(4)           run as owner                      -
+# sgid(2)           run as group owner     inherit dir group owner
+# sticky bit(1)          -                 delete only if you are owner
+
+# SetUserID very dangerous
+chmod 4770 <file>
+chmod u+s <file>
+find / -perm /4000 2>/dev/null             find all files with SUID
+# /etc/shadow doesn't have any permissions, than /usr/bin/passwd has permessions SUID
+
+# SetGroupID
+chmod 2770 <dir>                           it sets the group of the user as group owner
+chmod g+s <dir>
+
+# StickyBit
+chmod 1770 <dir>                           it permits to delete files only owners of file or dir
+chmod +t <dir>
+
+chmod +x [file]
+chmod u+s [file]                           if user open file, it’ll run as root
+
+#                                   ACL
+# It gives opportunity to use Multiple ‘owners’
+# Normal ACL applies to existing files only
+# Default ACL on a dir if you want to apply to new files
+# ACL should be applied twice!
+On the dir:
+setfacl –R –m g:[group]:rx [dir]    set ACL recurs, including directories
+setfacl –m d:g:[group]:rx [dir]     set by default and new files as well
+getfacl [dir]/                      show ALC of the [dir], current settings
+
+#                         Troubleshooting permissions
+ls -l <user>*                       see the permissions on the user folder
+# user can delete all files in his home directory
+# vim delete the original file and create with the same name and put permis from a user
+# the owner of the file can change the permissions
+
+
+
+# On the file:
+setfacl –m u:[user]:r [file]        set ACL to file
+*
+setfacl –m d:o::- [dir]             apply default ACL to the dir
+# For example
+cd /data
+groupadd account
+groupadd sales
+mkdir account
+mkdir sales
+chgrp sales sales                   set ownership
+chmod 770 sales                     only sales group has permission on dir
+getfacl sales                       get current permissions
+setfacl -m d:g:account:rx sales     setting a default ACL, you will see + in permissions
+getfacl sales                       now it shows default permissions
+touch 2020
+ls -l                               you can see a plus in permissions
+
+
+
+
+
+
+#                               Network
+# Configuration: persistent and runtime
+
+Nic naming
+	•	Bios naming:
+	•	em[1-N] for embedded NIC’s
+	•	eno[nn] for embedded NIC’s
+	•	ens[nn] for embedded NIC’s
+	•	p<slot_number>p<port_number> for NICs on the PCI bus
+	•	Udev naming: classical ethX naming
+	•	Physical naming: same as bios naming
+	•	Logical naming: <vlan> and: <alias>
+	•	Old network names, eth0:
+add options: biosdevname=0 and net.ifnames=0 -> GRUB boot loader
+/etc/default/grub find line /linux find boot control arg
+wite the cong grub /config/o/boot
+
+#                         Runtime:
+# you only change runtime environment, excellent for troubleshooting only
+ip --help
+ip link –help
+ip link show                show links with on status, show devices
+ip route show               show current routing table
+ip -s link show             show received and transmitted packages
+ip address --help
+ip addr show                current ip configuration with MAC
+ip addr                     show interfaces, 1: lo – 127.0.0.1
+                             2: ens33 – embedded interface
+ip addr add 10.0.0.10/24 dev ens33        add ip addr to dev ens33
+
+#                         Persistent:
+# Network Manager, you can config it with nmcli
+# /etc/sysconfig/network-scripts/ifcfg-ens33
+# in config file GATEWAY=<router_ip> show default route address
+# NM service must be running to manage config files
+systemctl status NetworkManager    show status of service
+rpm -qa | grep bash-completion     to easiest way to use nmcli
+man nmcli-examples                 show examples
+
+nmcli device status                show status of devices
+nmcli connection add ifname [eth] ipv4.addresses [ip/mask] ipv4.gateway [gw] ipv4.dns [dns] type ethernet
+nmcli connection show
+ip a                               show what is active
+nmcli connection up [eth]          turn on a connection and bring every changes
+nmcli connection modify [eth] ipv4.dns [ip_dns]
+nmcli connection up [eth]
+nmcli connection edit [eth]   edit settings for interface, help, print
+cat /etc/resolv.conf
+
+# Network manager text user interface with GUI
+nmtui (from RHEL 7.2)
+# IPv4 Configuration - Automatic, it means you use DHCP
+# ip address should be with mask, it means it looks like ip/mask
+nmtui                               gui to config the interfaces
+nmtui                               after config should activate
+
+#                              Router
+ip route show
+ip route del default via [ip]       del prev and allow to input new
+                                    and you won't have route to the Internet
+ip route add default via [ip]
+cat /ect/resolf.conf                generated by NetworkManager
+
+#                             Hostname
+hostnamectl status                  show the information
+hostnamectl set-hostname [name]     set new fqdn name
+vim /etc/hosts                      edit for localhost resolving
+
+#                       Network Analyzes Tools
+# hostname, ping, traceroute, dig(check DNS), netstat/ss(show listening ports), nmap(show remote server listening ports), ip
+# ping is used to test connectivity
+# ip address show                    show the network config
+# ip route show                      shows current routing table
+# dig [link]                         can test DNS nameserver working
+
+cat /ect/resolf.conf
+
+ping 8.8.8.8                       verify your connectivity
+ping -f google.com                 you can see how many packets you lost, best way to test your connectivity
+ping [router_ip]
+traceroute 8.8.8.8
+ip route add default via [ip]
+nmcli connection edit [eth]      help, set ipv4.gateway, save, quit
+nmcli con up [eth]
+dig [link]
+
+
+

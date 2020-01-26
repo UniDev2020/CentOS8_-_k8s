@@ -1,0 +1,149 @@
+# Installing offline Yum packages for old CentOS (5,6)
+yum install yum-plugin-downloadonly
+
+yum install --downloadonly <package-name>                                   download and save the packages in
+                                                                        /var/cache/yum/ in rhel-{arch}-channel/packages
+yum install --downloadonly --downloaddir=<directory> <package-name>
+
+# How to enable epel repo on CentOS 8
+# https://www.cyberciti.biz/faq/how-to-enable-and-install-epel-repo-on-centos-8-x/
+
+#for CentOS 7
+yum install yum-utils
+yumdownloader                        --destdir  option in yumdownloader command is used to specify the path of directory
+                                                where we want to save the downloaded rpms.
+                                     --resolve    option in yumdownloader will resolve the dependency and will download
+                                                  the required packages.
+yumdownloader docker kubeadm --destdir /opt/downloaded_rpms --resolve
+
+#                                        Docker and K8s, offline installation process
+# First of all you should have same versions of online and offline CentOS
+# Install Docker offline
+# On online VM
+yum install -y epel-release.noarch                        install EPEL yum repository before installing the Docker-CE
+
+# Install Docker-CE yum repository for CentOS
+yum-config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo     Install Docker-CE yum repo
+yum-config-manager --enable docker-ce-nightly             Enable Docker-CE (Nightly) yum repository.
+yumdownloader --resolve docker-ce-18.06.3.ce-3.el7        Download Docker-CE and dependent packages using yumdownloader
+                                                          command.
+
+# On offline VM
+# move files here
+rpm -ivh --replacefiles --replacepkgs *.rpm               Install all packages in the ~/docker directory.
+systemctl enable docker.service                           Start and enable Docker service
+systemctl start docker.service
+
+docker ps
+docker version
+
+# If you want to test offline Docker with images
+docker pull jenkins/jenkins                               Download Docker images
+docker save jenkins/jenkins > ~/jenkins.tar               Save Jenkins image in a tar file
+docker load < jenkins.tar                                 Load jenkins.tar image into docker
+docker images                                             jenkins.tar image has been loaded into Docker, verify this
+
+sestatus                                                  show status SElinux
+
+# Install K8s offline
+# After installing Docker CE, we must configure it to use with Kubernetes (K8s)
+mkdir /etc/docker
+cat > /etc/docker/daemon.json << EOF
+> {
+>   "exec-opts": ["native.cgroupdriver=systemd"],
+>   "log-driver": "json-file",
+>   "log-opts": {
+>     "max-size": "100m"
+>   },
+>   "storage-driver": "overlay2",
+>   "storage-opts": [
+>     "overlay2.override_kernel_check=true"
+>   ]
+> }
+> EOF
+
+#
+
+systemctl restart docker.service                           Restart docker.service
+
+#                      Downloading Packages/Images for Offline Installation of Kubernetes (K8s)
+
+# On online VM
+cat > /etc/yum.repos.d/kubernetes.repo << EOF
+> [kubernetes]
+> name=Kubernetes
+> baseurl=https://packages.cloud.google.com/yum/repos/kubernetes-el7-x86_64
+> enabled=1
+> gpgcheck=1
+> repo_gpgcheck=1
+> gpgkey=https://packages.cloud.google.com/yum/doc/yum-key.gpg https://packages.cloud.google.com/yum/doc/rpm-package-key.gpg
+> EOF
+mkdir ~/k8s
+cd ~/k8s
+yumdownloader --resolve kubelet kubeadm kubectl
+# Download Docker images from Docker Hub, as required by Kubernetes (K8s) for node initialization
+# yum list --showduplicates kubeadm --disableexcludes=kubernetes          Check the latest version of K8s
+docker pull k8s.gcr.io/kube-apiserver:v1.17.1
+docker pull k8s.gcr.io/kube-controller-manager:v1.17.1
+docker pull k8s.gcr.io/kube-scheduler:v1.17.1
+docker pull k8s.gcr.io/kube-proxy:v1.17.1
+# https://github.com/kubernetes/kubernetes/blob/release-1.17/build/dependencies.yaml     Check dependencies
+# https://console.cloud.google.com/gcr/images/google-containers/GLOBAL?pli=1             Check all images
+docker pull k8s.gcr.io/pause:3.1
+docker pull k8s.gcr.io/etcd:3.4.3-0
+docker pull k8s.gcr.io/coredns:1.6.5
+docker image ls -a                                         list Docker images
+# Export Kubernetes (K8s) related Docker images to individual tar files
+docker save k8s.gcr.io/kube-apiserver:v1.17.1 > ~/k8s/kube-apiserver.tar
+docker save k8s.gcr.io/kube-controller-manager:v1.17.1 > ~/k8s/kube-controller-manager.tar
+docker save k8s.gcr.io/kube-scheduler:v1.17.1 > ~/k8s/kube-scheduler.tar
+docker save k8s.gcr.io/kube-proxy:v1.17.1 > ~/k8s/kube-proxy.tar
+docker save k8s.gcr.io/pause:3.1 > ~/k8s/pause.tar
+docker save k8s.gcr.io/etcd:3.4.3-0 > ~/k8s/etcd.tar
+docker save k8s.gcr.io/coredns:1.6.5 > ~/k8s/coredns.tar
+ls ~/k8s/*.tar                                             list tar files
+# Download Flannel Network script
+cd ~/k8s
+wget https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+# Transfer the directory ~/k8s from docker-online to docker-offline
+cp *.tar /mnt/hgfs/Disk-O
+# docker image rm <image id>                               To delete image
+
+# On offline VM
+# Prereq for k8s
+cat > /etc/sysctl.d/kubernetes.conf << EOF
+> net.ipv4.ip_forward = 1
+> net.bridge.bridge-nf-call-ip6tables = 1
+> net.bridge.bridge-nf-call-iptables = 1
+> EOF
+modprobe br_netfilter                                 Reload Kernel parameter configuration files.
+sysctl --system
+swapoff -a                                            Turn off Swap for Kubernetes (K8s) installation.
+sed -e '/swap/s/^/#/g' -i /etc/fstab
+
+# For Master node
+firewall-cmd --permanent --add-port={6443,2379,2380,10250,10251,10252}/tcp
+# For Worker nodes
+firewall-cmd --permanent --add-port={10250,30000-32767}/tcp
+firewall-cmd --reload                                Reload firewall configurations
+
+setenforce 0                                         Switch SELinux to Permissive mode using following commands
+sed -i 's/^SELINUX=enforcing$/SELINUX=permissive/' /etc/selinux/config
+
+# Installing Kubernetes (K8s) Offline on CentOS 8
+rpm -ivh --replacefiles --replacepkgs ~/k8s/*.rpm    install Kubernetes (K8s) packages from ~/k8s directory using rpm command
+source <(kubectl completion bash)                    Enable bash completion for kubectl
+kubectl completion bash > /etc/bash_completion.d/kubectl
+
+# Import the tar files of docker images into Docker
+docker load < ~/k8s/coredns.tar
+docker load < ~/k8s/kube-proxy.tar
+docker load < ~/k8s/etcd.tar
+docker load < ~/k8s/kube-scheduler.tar
+docker load < ~/k8s/kube-apiserver.tar
+docker load < ~/k8s/pause.tar
+docker load < ~/k8s/kube-controller-manager.tar
+# We have to configure a master node first
+kubeadm init --kubernetes-version v1.17.1
+
+

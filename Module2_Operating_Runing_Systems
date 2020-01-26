@@ -1,0 +1,116 @@
+RHEL, CentOS 8
+#                                   Module 2
+#                          Processes & Memory usage
+# if swap mem bigger then anonymous inactive mem it’s a trouble
+
+
+#                       Shell jobs
+# Use <command> & to start a job in the background
+# For example while true; do true; done &
+# to move a job to the background, first stop it Ctrl+'Z', next type bg
+# For example dd if=/dev/zero of=/dev/null move nothing to nowhere
+
+sleep 600                         occupy the console
+ctrl+”z”                          stop the job
+jobs                              show running jobs
+bg                                put the job in background
+sleep 700 &                       run the job in the background
+fg                                run the last job in foreground
+fg 1                              run the job #1 in foreground
+Ctrl+'c'                          stop the job
+
+#                  Get Process with ps
+# All tasks are started as processes
+# Processes have a PID (process identification number)
+#
+
+ps                                show the process of your account
+ps aux | head                     show ten top processes
+ps aux | less
+             VSZ    amount of memory for the proc
+             RSS    memory in use in physical RAM
+             TTY    show background (?) or foreground proc
+             STAT   status of the proc(S –sleeping)
+             START  when the proc start
+             TIME   how long the proc works
+             COMMAND   [] – the part of a kernel
+ps aux                           in the end the proc started recently
+ps aux | grep syslog             the proc from syslog, logging
+ps –ef | head                    additional information
+             PPID   the parent process id
+ps -fax                          show proc with related link, hierarchical relations
+
+ps -fU <user>                    show all processes owned by user
+ps -f --forest -C <process>      show a process tree for a specific process
+ps -eo pid,ppid,user,cmd         show custom process list
+
+#                    Memory usage
+cat /proc/meminfo                show overcommit Virtual memory
+numactl --hardware               show list of nodes
+numactl --interleave all command    manage virtual memory
+free –m                          show page cache
+             available           show mem currently used
+grep Cached /proc/meminfo        show page cache
+grep active /proc/meminfo        show active/inactive mem
+vmtouch /var/lib/db/index        show file in page cache
+cat /proc/<pid>/status           show virtual memory
+Performance load
+
+uptime                            show sys run & load average, minute, 5 minute, 15 minutes
+watch uptime                      command repeat every 2 seconds, if  big number of average in 15 min its a problem
+lscpu | less                      show how many cpu in the system
+create some job and show its process
+dd if=/dev/zero of=/dev/null &    copy nothing to nothing
+top                               show the run time processes
+                    f             show the options to see
+                    w             refresh the top
+#                   Signals to processes
+man 7 signal                      show man with signals
+ps aux | grep dd                  find the pid of the process
+ps aux | grep '\<dd'              find with a regular expressions
+pidof dd                          show pids of proc
+kill [pid]                        kill the proc with signal 15
+kill -9 [pid]                     kill with signal 9
+pidof dd
+killall dd                        kill all processes
+
+top                              is a dashboard, monitor curr sys activity
+         f                       show and select from available display fields
+         M                       filter on memory usage
+         W                       save new display settings
+         k                       kill the proc from top
+              15                 kill, stop the proc with clean the console
+              9                  kill, just kill immediately without cleaning
+
+#                Priorities and Niceness
+# real-time processes can be started with highest priority
+# to change priorities of non-realtime processes, nice and renice command
+top
+                       r          renice the command
+renice -5 [pid]                change the priority of the proc
+Software
+
+rpm redhat package manager
+libraries  dependency
+yum  repositories
+
+yum repolist                       download info about repolist & show
+Create a private repository
+cd /
+mkdir /repo
+cd repo/
+yumdownloader q*                   download rpm with q
+createrepo /repo                   generating indexes
+Using repositories
+cd /etc/yum.repos.d/               dir with repo files
+cat redhat.repo
+man –k yum
+man yum.conf                       info how to config your own repo
+vim yum.repos.d                    create repolist
+        [myrepo]
+        name=my demo repository
+        baseurl=file:///repo
+        gpgcheck=0
+yum repolist
+yum search epel
+yum install epel-release
