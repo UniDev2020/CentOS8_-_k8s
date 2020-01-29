@@ -85,32 +85,203 @@ top                              is a dashboard, monitor curr sys activity
 #                Priorities and Niceness
 # real-time processes can be started with highest priority
 # to change priorities of non-realtime processes, nice and renice command
+# Nice values range from -20 to 19 and rt - real time, before anybody, a highest priority
 top
                        r          renice the command
-renice -5 [pid]                change the priority of the proc
-Software
+# 3d column - Priority, 4th - Nice
+nice -n -1 <command>             it creates a process with a special priority
+renice -5 [pid]                  change the priority of the proc
 
-rpm redhat package manager
-libraries  dependency
-yum  repositories
+#                             Tuned
+# a service that allows for performance optimization in an easy way
+# should ensure the tuned service is enabled and started
+tuned-adm list                    show a list of profiles
+tuned-adm profile <name>          set a profile
+tuned-adm active                  confirm your choice
 
-yum repolist                       download info about repolist & show
-Create a private repository
-cd /
-mkdir /repo
-cd repo/
-yumdownloader q*                   download rpm with q
-createrepo /repo                   generating indexes
-Using repositories
-cd /etc/yum.repos.d/               dir with repo files
-cat redhat.repo
-man –k yum
-man yum.conf                       info how to config your own repo
-vim yum.repos.d                    create repolist
-        [myrepo]
-        name=my demo repository
-        baseurl=file:///repo
-        gpgcheck=0
+#                         Managing Software
+# RPM - Red Hat Package Manager is a package format to install Software
+# The package contains a compressed archive of files and a list of pack dependencies
+# May contains scripts
+
+#                          Repositories
+
+# Create your own repository that we can install pack from RHEL8 ISO image
+dd if=/dev/sr0 of=rhel8.iso bs=1M         create an ISO image
+mkdir /repo                               create a dir for repository
+# Above RHEL 8 use fstab, after systemd
+cat > /etc/fstab << EOF
+> /rhel8.iso    /repo    iso9660   defaults    0 0
+> EOF
+mount -a                                  mount the ISO
+# Create a repo file
+cat > /etc/yum.repos.d/appstream.repo << EOF
+> [appstream]
+> name=appstream
+> baseurl=file:///repo/AppStream
+> gpgcheck=0
+> EOF
+cat > /etc/yum.repos.d/base.repo << EOF
+> [BaseOS]
+> name=BaseOS
+> baseurl=file:///repo/BaseOS
+> gpgcheck=0
+> EOF
+# Show YUM repositories
 yum repolist
-yum search epel
-yum install epel-release
+
+#                   Modules and Application Streams
+#  Use yum to install an application
+yum search <app>                            Search an application in the repositories
+yum install <app>                           Install and resolving dependencies
+yum update                                  Update the repositories
+yum provides <*app>                         It searches deeper than search
+yum info <app>                              Provides a detail info about an app
+yum list all                                Show pack and repo where its available
+yum list installed                          Show installed pack
+
+#  Using yum Modules
+# If you update previous version to newer, previous will be disable
+# yum module install <module>:<version1> and yum module install <module>:<version2>
+yum module list
+yum module provides <module>                Searches the module that provides a spec pack
+yum module info <module>                    Info about a module
+yum module info --profile <module>          Shows profiles
+yum module list <module>                    Shows which streams are available
+yum module install <module>:<version>
+yum install @<module>:<version>
+yum module install <module>:<version>/<profile>
+yum install <module>                        Automatically enable the module stream
+yum module enable <module>:<version>        Enables the module but doesn't install anything yet
+
+# Using yum Groups
+# are provide to give access to spec categories of software
+yum groups list                             List of most common yum groups
+yum groups list hidden                      all of these
+yum groups info <groupname>                 show which packages are in group
+yum groups install <groupname>              install a spec yum group
+yum groups install --with-optional <groupname>
+
+# yum history and yum update
+yum history                                 gives a list of recent commands
+yum history undo <number>                   undo a spec command from history
+yum update                                  update all packages on system
+yum update <packagename>                    update a package with all dep
+
+# rpm queries
+# rpm doesn't consider deps
+# rpm is useful to perform package queries
+# rpm queries are against the db of installed pack
+rpm -qf /any/file                           give a pack name of this file
+rpm -ql <pack>                              show files entire pack
+rpm -qd <pack>                              show documentation
+rpm -qc <pack>                              show a config file
+rpm -qp --scripts <pack-file>.rpm           show scripts in pack
+
+#                          Subscription Manager
+# It uses only on RHEL
+# If you want evaluate, use the free dev subscr, developer.redhat.com
+subscription-manager register               register your system
+subscription-manager attach --auto          add subs to repository
+less redhat.repo                            show certificates
+
+#                          Working with Systemd
+# Managed items are called units
+# Services, mounts, timers and many more
+systemctl -t help                           show all available unit types
+systemctl list-unit-files                   show all available with state
+systemctl list-units                        current states of all run units
+systemctl status <pack>                     show current state of pack
+systemctl start <pack>
+systemctl enable <pack>                     create a symbolic link and service start auto
+
+# Default systemd unit files are in /usr/lib/systemd/system
+# Custom in /etc/systemd/system
+# Run-time auto generated in /run/systemd
+# While modifying create a custom file in /etc/systemd/system
+# Better use systemctl edit unit.service, auto create a file
+systemctl show                              show available parameters
+systemctl-reload                            after modifying a unit file
+# For example
+systemctl cat <service>.service             contents of config file
+systemctl show <service>.service            list with all parameters
+systemctl edit <service>.service
+> [Service]
+> Restart=always
+> RestartSec=5s                             after 5 seconds
+systemctl daemon-reload                     after edit needs to restart
+systemctl restart <service>                 restart all the service
+killall <service>
+systemctl status <service>                  the service restart activating
+
+#                           Scheduling Tasks
+# cron for a regular basis tasks
+man 5 cron                                  documentation
+# at for tasks that need to be started once
+systemctl status atd                        revise the service is running
+atq                                         list of jobs
+at <time>                                   teatime is 16:00 )) 6 pm, 6 pm tomorrow
+atrm <number>                               remove jobs from a list
+
+# Systemd Timers a new alternative to Cron
+man 7 systemd-timer                         documentation
+man 7 systemd-time                          specification of time format
+vim /etc/systemd/system/fstrim.timer
+vim /etc/systemd/system/fstrim.service
+systemctl enable fstrim.timer && systemctl start fstrim.timer
+
+crontab -e                                  cron job for the current user
+# Config is in /etc/crontab
+# generic time-specific cron jobs in /etc/cron.d (cron.daily, .hourly, .monthly, .weekly)
+# Anacron uses to jobs not at a specific time
+# Config is in /etc/anacrontab
+# For example
+date                                        show current date and time
+crontab -e                                  create a cron job for this account
+18 16 * * * logger hello
+less /var/log/messages                      find our cron job
+
+#                     Managing temporary files
+# /usr/lib/tmpfiles.d dir manages settings for creating, del, cleaning up of temp files
+# systemd-tmpfiles-clean.timer unit to auto clean up, it triggers:
+# systemd-tmpfiles-clean.service, it runs:
+# systemd-tmpfiles --clean
+# /usr/lib/tmpfiles.d/tmp.conf contains settings for auto tmp file cleanup
+# when making modif copy the files to /etc/tempfiles.d
+# after use systemd-tmpfiles --clean /etc/tempfiles.d/tmp.conf to avoid any errors
+# tmp.conf includes all info about tmp files
+man tmpfiles.d                               documentation
+
+#                          Logging
+# systemd-journald includes all events in your system
+# By default in memory only, because rsuslogd save it in /var/log
+# systemd-journald to /dev/log -> Rsuslogd -> /var/log
+# if you create /var/log/journal and restart service systemd-journald
+# messages will write to this folder
+journalctl                                  utility to show what is going on
+journalctl UNIT=<service>                   show last messages from service
+systemctl status <unit>                     show most recent messages and status !!!
+# Configuration /etc/systemd/journald.conf
+
+#                      Rsyslog logging
+# rsyslogd service needs to be running
+# main config file is /etc/rsyslog.conf
+# snap-in files in /etc/rsyslog.d/ what should be logged and where
+# logger line contains: the spec facility that the log is created for
+# the severity from which should be logged
+# the file or other destination the log should be written to
+# logger command to write messages to rsyslog manually
+
+#                     Preserving the Systemd Journal
+# The journal is written to /run/log/journal, which is auto cleared up after reboot
+# Edit /etc/systemd/journald.conf to make the journal persistent across reboot
+# Storage parameter:
+systemctl status systemd-journald          show status of the service
+mkdir /var/log/journal
+systemctl restart systemd-journald
+systemctl status systemd-journald          it shows that journal in use
+
+#                         Logrotate
+# it starts through cron.daily to ensure that log files don't grow too big
+# Main config is in /etc/logrotate.conf, snap-in files through /etc/logrotate.d/
+
