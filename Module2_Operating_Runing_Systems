@@ -110,9 +110,8 @@ tuned-adm active                  confirm your choice
 dd if=/dev/sr0 of=rhel8.iso bs=1M         create an ISO image
 mkdir /repo                               create a dir for repository
 # Above RHEL 8 use fstab, after systemd
-cat > /etc/fstab << EOF
+vi /etc/fstab
 > /rhel8.iso    /repo    iso9660   defaults    0 0
-> EOF
 mount -a                                  mount the ISO
 # Create a repo file
 cat > /etc/yum.repos.d/appstream.repo << EOF
@@ -285,3 +284,100 @@ systemctl status systemd-journald          it shows that journal in use
 # it starts through cron.daily to ensure that log files don't grow too big
 # Main config is in /etc/logrotate.conf, snap-in files through /etc/logrotate.d/
 
+#                            Storage
+# BIOS, MBR has 4 partitions and logical part ext in 4th partition
+# 512 bytes to store boot data, 4 part with max 2 TiB
+# UEFI, GPT has 128 partitions max
+# fdisk to work with MBR, gdisk to use GUID partitions
+# parted is default utility in RHEL 8
+
+lsblk                                        list block devices
+parted /dev/nvme0n1                          info about device
+
+ls -l /dev/nvm*                              show nvme disks
+ls -l /dev/sd*                               show scsi disks
+cat /proc/partitions                         show block devicies
+
+#                       Storage options
+# Partitions, LVM Logical Volumes, Stratis, Virtual Data Optimizer
+#                           parted
+parted /dev/sdb
+print                                       show if there is a current part table
+quit                                        to exit the parted shell
+udevadm settle                              ensure that the new partition dev is created
+mklabel msdos|gpt                           choice the label of the disk
+mkpart <part-type> <name> <fs-type> <start end>
+# mkpart one 1MiB 1024MiB
+# print
+# quit
+mkpart                                      interactive mode
+#                            fdisk
+lsblk
+fdisk /dev/<partition>
+                      m                     for help
+                      n                     add a new partition
+                             p              primary
+                             +1G            1 GiB partition
+                      p                     list of partitions
+partprobe                                   make sure everything is updated
+
+#                         File systems
+# XFS for RHEL 8 not decreased, Ext4 for RHEL 6 can be decreased
+mkfs.xfs                                    create an XFS file system
+mkfs.ext4                                   create an Ext4 file system
+mkfs.[Tab][Tab]                             show a list of available FS
+# do not use mkfs as it will create an Ext2 FS
+# mount and unmount the FS
+lsblk
+mkfs.xfs /dev/<partition>                   create FS with new partition
+# mkfs.ext4 /dev/<partition>
+mount /dev/<partition> /mnt                 mount the FS
+mount | grep '^/'                           show strings just with /
+lsof /mnt                                   show last commands using with /mnt
+umount /mnt
+
+#                        /etc/fstab
+# The main config file to persistently mount partitions
+# is used to generate systemd mounts by the systemd-fstab-generator utility
+
+#                        Persistent Device Naming
+# UUID is auto generated for each device that contains a file system or a swap device
+# Label: arbitrary name for mounting the FS, it avoids from name changing with devices
+# Unique device names are created in /dev/disk
+blkid                                        show devices UUID
+tune2fs --help                               set labels
+
+#                        Systemd mounts
+# /etc/fstab already are systemd mounts
+# systemd.mounts files, allows yo to be more specific in defining deps
+systemctl cat tmp.mount                      show mount configuration
+mount -a | grep tmp                          if it shows nothing
+systemctl status tmp.mount                   show status
+systemctl enable --now tmp.mount
+mount | grep tmp
+# original file in /usr/lib/systemd/system/tmp.mount /etc/systemd/system/
+cp /usr/lib/systemd/system/tmp.mount /etc/systemd/system/<dirname>.mount
+vim /etc/systemd/system/<dirname>.mount
+# change this file for your mount
+systemctl daemon-reload
+systemctl status <dirname>.mount
+# unmount /<dirname>
+# systemctl status <dirname>.mount
+# systemctl enable --now <dirname>.mount
+# systemctl status <dirname>.mount
+
+#                     Managing XFS File Systems
+# xfsdump utility to create backups, full or diff levels of incremental
+xfsdump -l 0 -f /backupfiles/data.xfsdump /data        full backup /data
+# xfsrestore -f /backupfiles/data.xfsdump /data        restore it
+# xfsrepair                                            repair broken XFS FS
+
+#                               Swap partition
+# Swap is RAM that is emulated on disk
+# While parted swap, set FS to linux-swap
+# mkswap to create the swap FS
+# activate using swapon
+lsblk                                                  list of FS
+free -m                                                show mem and swap
+vim /etc/fstab
+# add > /dev/device          swap          swap       defaults      0 0

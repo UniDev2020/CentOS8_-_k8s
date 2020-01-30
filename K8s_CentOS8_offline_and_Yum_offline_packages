@@ -1,3 +1,4 @@
+K8s, CentOS 8
 # Installing offline Yum packages for old CentOS (5,6)
 yum install yum-plugin-downloadonly
 

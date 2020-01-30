@@ -11,6 +11,8 @@ su -                                   open shell as a root user
 exit                                   close root session
 free -m                                how much memory have
 cat /etc/redhat-release                show OS release
+<command> | <command>                  run command in pipeline
+<command> ; <command>                  run command step by step
 
 Help
 ls -- help                             showing help for ls command
@@ -178,10 +180,10 @@ locate useradd             find all files with this word
 find --help                help for find command
 find / -size +100M         find files and dir with size +100M in /
 find / -type -f -size +100M     just files
-find /tmp -type d          find all directories in /tmp
+find /tmp -type d          find all directories in /tmp                    !!!
 find / -size +100M –exec ls –l {} \;    find and execute show information
 find / -size +100M –exec ls –l {} \; 2> /dev/null   without error
-find /etc -size +100c -exec grep -l student {} \; -exec cp {} /tmp \; 2> /dev/null
+find /etc -size +100c -exec grep -l student {} \; -exec cp {} /tmp \; 2> /dev/null !!!
 find / -user anna
 find / -name "hosts"         all with name hosts
 findmnt                    shows mounted file systems
