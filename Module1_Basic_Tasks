@@ -398,8 +398,8 @@ useradd linda                       create a user linda
 tail –n 1 /etc/passwd               show last line in passwd file
 tail –n 1 /etc/shadow               show other property for user
 cd /home                            change dir to home dir
-ls –l                                  show all home dir for users
-ls –al                                 show files in the home dir
+ls –l                               show all home dir for users
+ls –al                              show files in the home dir
                               it has specific bash conf files for user
                                          from /etc/skel file
 userdel –f                    remove user even if the user still login
@@ -423,8 +423,8 @@ grep nologin /etc/passwd         show all users with nologin
 
 #                    User Configuration Files
 /etc/default/useradd
-/etc/login.defs                preferred user conf file, default opt
-/etc/skel  $HOME               about home directory
+/etc/login.defs                preferred user conf file, default settings for users
+/etc/skel/                     directory where we create necessary files for users home directory
 /etc/passwd                    main conf file for users, primary group
 /etc/shadow                    password management, encr files here
                                !! - doesn't have password
@@ -446,7 +446,8 @@ id user
 
 usermod –g                       new primary group
 usermod –G                       new list of supplementary groups
-usermod –aG people anna          add to group people
+usermod –aG people anna          add a user to a group
+id user                          check user groups
 
 #                     Groups, primary, secondary
 Every user needs to be in primary group, -mandatory
@@ -494,6 +495,7 @@ chmod 764 file
 #                         Permissions
 ls –l                        show user, group, perm owner of files
 chown –R user:group file     change user and group ownership & recursive
+chown user:group dir
 chgrp group file             change group ownership
 chown :group file                        with chown
 
@@ -532,6 +534,8 @@ vim .bash_profile              insert here umask 027 as example
 
 # SetUserID very dangerous
 chmod 4770 <file>
+chmod 3770 <file>                          members of groups r/w other not perm at all
+                                           and users can delete just their files
 chmod u+s <file>
 find / -perm /4000 2>/dev/null             find all files with SUID
 # /etc/shadow doesn't have any permissions, than /usr/bin/passwd has permessions SUID
@@ -567,6 +571,8 @@ ls -l <user>*                       see the permissions on the user folder
 
 # On the file:
 setfacl –m u:[user]:r [file]        set ACL to file
+# setfacl -m d:g:<group>:rx [dir]   set ACL to dir
+# getfacl .                         get ACL in a current directory
 *
 setfacl –m d:o::- [dir]             apply default ACL to the dir
 # For example
@@ -582,9 +588,6 @@ setfacl -m d:g:account:rx sales     setting a default ACL, you will see + in per
 getfacl sales                       now it shows default permissions
 touch 2020
 ls -l                               you can see a plus in permissions
-
-
-
 
 
 

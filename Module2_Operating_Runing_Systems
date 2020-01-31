@@ -11,7 +11,7 @@ RHEL, CentOS 8
 # For example dd if=/dev/zero of=/dev/null move nothing to nowhere
 
 sleep 600                         occupy the console
-ctrl+”z”                          stop the job
+ctrl+”z”                          put the job into background
 jobs                              show running jobs
 bg                                put the job in background
 sleep 700 &                       run the job in the background
@@ -193,6 +193,7 @@ systemctl list-units                        current states of all run units
 systemctl status <pack>                     show current state of pack
 systemctl start <pack>
 systemctl enable <pack>                     create a symbolic link and service start auto
+systemctl edit service                      edit config file and change behavior
 
 # Default systemd unit files are in /usr/lib/systemd/system
 # Custom in /etc/systemd/system
@@ -210,7 +211,7 @@ systemctl edit <service>.service
 > RestartSec=5s                             after 5 seconds
 systemctl daemon-reload                     after edit needs to restart
 systemctl restart <service>                 restart all the service
-killall <service>
+killall <service>                           also if you have more than one process
 systemctl status <service>                  the service restart activating
 
 #                           Scheduling Tasks
@@ -220,6 +221,8 @@ man 5 cron                                  documentation
 systemctl status atd                        revise the service is running
 atq                                         list of jobs
 at <time>                                   teatime is 16:00 )) 6 pm, 6 pm tomorrow
+> input job
+ctrl + 'd'                                  exit
 atrm <number>                               remove jobs from a list
 
 # Systemd Timers a new alternative to Cron
@@ -270,6 +273,16 @@ systemctl status <unit>                     show most recent messages and status
 # the severity from which should be logged
 # the file or other destination the log should be written to
 # logger command to write messages to rsyslog manually
+man 5 rsyslog.conf                          documentation
+vim /etc/rsyslog.conf
+> *.error            /var/log/error         put all error in this folder
+cd /etc/rsyslog.d/
+vim error
+> /var/log/error {                          rotate on a monthly basis, ensure 12 last kept
+          monthly
+          rotate 12
+          create
+}
 
 #                     Preserving the Systemd Journal
 # The journal is written to /run/log/journal, which is auto cleared up after reboot
@@ -277,12 +290,15 @@ systemctl status <unit>                     show most recent messages and status
 # Storage parameter:
 systemctl status systemd-journald          show status of the service
 mkdir /var/log/journal
+mkdir /var/log/
 systemctl restart systemd-journald
 systemctl status systemd-journald          it shows that journal in use
 
 #                         Logrotate
 # it starts through cron.daily to ensure that log files don't grow too big
 # Main config is in /etc/logrotate.conf, snap-in files through /etc/logrotate.d/
+
+
 
 #                            Storage
 # BIOS, MBR has 4 partitions and logical part ext in 4th partition
