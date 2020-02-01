@@ -397,3 +397,90 @@ lsblk                                                  list of FS
 free -m                                                show mem and swap
 vim /etc/fstab
 # add > /dev/device          swap          swap       defaults      0 0
+
+#                             Mananging Advanced Storage
+#                                  Logical Volume
+# if you use  parted <part-numb> set <number> lvm on, if fdisk you can use type 8e
+# Use pvcreate /dev/sdb1 to create a physical volume (pv)
+pvs                                            show physical volumes
+# vgcreate vgada /dev/<partition> ro create a volume group
+vgs                                            show volume groups
+# lcreate -n lvdata -L 1G vgdata to create the logical volume
+lgs                                            show logical volumes
+# mkfs.xfs /dev/vgdata/lvdata
+# then to /etc/fstab to mount it persistently
+# After created LVM Device mapper generates meaningless names, like /dev/dm-0
+# Meaningful names are provided as symbolic links through /dev/mapper: /dev/mapper/vgdata-lvdata
+#                                    Resizing LVM
+df -h                                          show available disk space
+vgs                                            show how big volume group and available storage,look at VFree
+vgextend <device> <partition>                  add a new physical volume
+lvextend -r                                    resize the FS, disk needs to be in a volume group
+# also e2resize is an indep resize utility for EXT FS, xfs_growfs to grow an XFS FS
+# XFS non shrinkable
+
+#                                     Stratis
+# Volume management FS, on top of it a regular FS: XFS
+# built on top of any block device, including LVM
+# features: Thin provisioning, Snapshots, Cache tier, Programmatic API, monitoring and repair
+yum install stratis-cli stratisd               check that the service has installed
+systemctl enable --naow stratisd               enable the service
+stratis pool create mypool /dev/nvme0n2        create a pool on a device
+stratis pool                                   show pools
+stratis fs create mypool myfs1                 create fs on top of a pool, auto create XFS
+stratis fs                                     list mypool
+mkdir /myfs1                                   create a mount point
+mount /dev/stratis/mypool/myfs1 /myfs1         mount to dir
+stratis pool list                              show a pool
+stratis fs list                                show an FS
+stratis blockdev list mypool                   info about block devices which use the pool
+lsblk                                          show block devices
+blkid                                          find the Stratis volume UUID
+# mount by UUID in /etc/fstab
+#                                      Stratis features
+# Extended: Pool can be ext by adding additional block devices
+stratis pool add-data mypool /dev/<partition>       to add another block device
+# Monitoring Stratis Volume: stratis blockdev, stratis pool, stratis filesystem
+# Snapshots: an individual FS, can be modified, uses separately, needs a backing storage for XFS log
+stratis fs snapshot mypool myfs1 myfs1-snapshot     to create a snapshot
+mount /stratis/mypool/my-fs-snapshot /mnt      mount it
+# Revert the original volume to the snapshot state
+umount /myfs1
+stratis fs destroy mypool myfs1
+stratis fs snapshot mypool myfs1-snap myfs1    revert a snapshot
+stratis filesystem destroy mypool mysnapshot   delete a snapshot
+stratis filesystem destroy mypool myfs         destroy a FS
+stratis filesystem destroy mypool mypool       delete a pool
+# For example
+stratis blockdev                               list of block devices
+stratis pool                                   list of pools
+stratis filesystem                             list FS
+df -h | grep myfs                            not use to monitor stratis devices
+
+#                                        VDO
+# Virtual Data Optimizer is used to optimize how data is stored on disk
+# used as a separate volume manager on top of which fS will be created
+# Provides thin-provisioned storage
+# It manages dedup and compres storage pools in RHEL 8
+# Ensure that underlying block deveces are > 4 GiB
+yum install vdo kmod-kvdo                       install necessary packages
+vdo create --name=vdo1 --device=/dev/nvme0np2 --vdoLogicalSize=1T
+mkfs.xfs -K /dev/mapper/vdo1
+udevadm settle                                  register a new device
+mkdir /vdo1
+# mount in /etc/fstab, include x-systemd.requires=vdo.service
+# vdostats --human-readable
+
+#                                 LUKS Encrypted devices
+parted <partition>                              create a partition
+cryptsetup luksFormat <partition>               format the LUKS device
+cryptsetup luksOpen <partition>                 open it and create a device mapper name
+# mount the resulting device mapper device
+# to automate the cryptsetup luksOpen, use /etc/crypttab
+# to automate mounting volume use /etc/fstab
+ls -l /dev/mapper/                              show devices
+mkfs.xfs /dev/mapper/secret                     create XFS FS
+
+
+
+
