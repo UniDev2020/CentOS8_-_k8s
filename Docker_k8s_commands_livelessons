@@ -1,0 +1,96 @@
+Docker, k8s
+#                                  Docker
+docker ps                                    show all your containers
+# Installing Docker
+# Remove any versions of docker:
+sudo yum remove docker \
+                  docker-client \
+                  docker-client-latest \
+                  docker-common \
+                  docker-latest \
+                  docker-latest-logrotate \
+                  docker-logrotate \
+                  docker-engine
+# Install required packages
+sudo yum install -y yum-utils \
+  device-mapper-persistent-data \
+  lvm2
+# Use the following command to set up the stable repository.
+sudo yum-config-manager \
+    --add-repo \
+    https://download.docker.com/linux/centos/docker-ce.repo
+# Install the latest version of Docker Engine - Community and containerd
+sudo yum install docker-ce docker-ce-cli containerd.io
+sudo systemctl enable docker
+sudo systemctl start docker
+systemctl status docker
+########################################################################
+docker info                                   verify that it is running
+docker info | less                            very useful to show how much disk space has used
+docker search fedora                          search for containers on Docker Hub
+docker run fedora echo Hello world            start the container with command
+docker ps                                     show running containers
+docker ps -all                                verify operations
+docker image list                             verify images
+docker container ls                           verify containers
+docker run -it fedora /bin/bash               start a shell on a container
+# Ctrl + 'p' then Ctrl + 'q'                  detach from a running container
+usermod -aG docker user                       run Docker commands as non-root user
+
+docker pull <image>                           pull images from Docker Hub
+docker run  <image>                           if it isn't locally, pull and run it
+docker run --help | less                      run command has many options
+docker push  <image>                          push images on Docker Hub
+docker images                                 available docker images
+docker rmi <image>                            remove images
+docker save <image>
+docker load <image>
+docker attach <container>                     brings to the container environment
+docker version                                compare client and server versions of Docker
+docker top <container>                        provides info about processes inside Docker
+docker stats <container>                      provides realtime info about activity of container
+docker cp <container>:path path               copy files from container
+docker exec <container> <command>             run a command inside the container
+docker kill <container>
+docker stop <container>                       stop a container
+docker start <container>                      start a container
+docker pause <container>                      suspend a container
+docker unpause <container>                    unsuspend a container
+docker rm <container>                         remove these containers
+docker rm $( docker ps -aq)                   delete all containers
+docker inspect <container>                    all the properties of a container
+#########################################################################
+# pull the latest image, -dit demonize a container and open in interactive
+# give a name to the container, run and starting a command
+docker run -dit --name centos --hostname=centos centos /bin/bash
+docker attach centos
+exit                                          when exit from the command in container, container stops
+# filter an information about a container and show necessary parameter
+docker inspect -f '{{ .NetworkSettings.IPAddress }}' <container>     show  ip address
+#                               Network and containers
+docker run -d --name httpd -p 8080:80 httpd                          port mapping to make them accessible
+curl http://localhost:8080                                           check a connection
+#
+docker run -d name httpd2 -p 192.168.1.150:8090:80 httpd             IP address for the port forward
+#                                     Storage
+# On RHEL a host directory should have the svirt_sandbox_file_t context label for SELinux
+# on the host directory use chown to set the appropriate UID and GID as owner
+# for example for mariadb to have a persistent database:
+mkdir -p /var/local/mysql
+setenforce 0
+chown -R 27:27 /var/local/mysql
+docker pull mariadb
+docker run --name mariadb -d -v /var/local/mysql:/var/lib/mysql \
+                   -e MYSQL_USER=user -e MYSQL_PASSWORD=password \
+                   -e MYSQL_DATABASE=addresses -e MYSQL_ROOT_PASSWORD=password mariadb
+docker ps
+ls -l /var/local/mysql/
+docker -exec -it mariadb /bin/bash
+ls -l /var/lib/mysql/
+
+
+#                                  K8s
+kubectl run fedora --image=fedora             create a deployment
+kubectl get deployments                       show all deployments
+kubectl delete deployment fedora              delete a deployment
+kubectl run fedora --image=fedora -- /usr/bin/sleep 3600         create a deployment with a command in it
