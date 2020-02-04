@@ -46,7 +46,7 @@ docker images                                             jenkins.tar image has 
 
 sestatus                                                  show status SElinux
 
-# Install K8s offline
+#                                        Install K8s offline
 # After installing Docker CE, we must configure it to use with Kubernetes (K8s)
 mkdir /etc/docker
 cat > /etc/docker/daemon.json << EOF
@@ -64,7 +64,6 @@ cat > /etc/docker/daemon.json << EOF
 > EOF
 
 #
-
 systemctl restart docker.service                           Restart docker.service
 
 #                      Downloading Packages/Images for Offline Installation of Kubernetes (K8s)
@@ -146,5 +145,67 @@ docker load < ~/k8s/pause.tar
 docker load < ~/k8s/kube-controller-manager.tar
 # We have to configure a master node first
 kubeadm init --kubernetes-version v1.17.1
+
+mkdir -p $HOME/.kube
+sudo cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+sudo chown $(id -u):$(id -g) $HOME/.kube/config
+#####export KUBECONFIG=/etc/kubernetes/admin.conf   if you have some errors
+
+systemctl enable kubelet.service                      Start and enable kubelet.service
+systemctl start kubelet.service
+
+#                                  Network for K8s
+# On online VM:
+wget https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+# Open the kube-flannel.yml file, and find the line that indicates the flannel image version. For example, in the following string, the version is v0.10.0:
+# image: quay.io/coreos/flannel:v0.10.0-amd64
+# docker pull quay.io/coreos/flannel:v<version>-amd64
+# docker save quay.io/coreos/flannel:v<version>-amd64 > flannel_v<version>-amd64.tar
+docker pull quay.io/coreos/flannel:v0.11.0-amd64
+docker save quay.io/coreos/flannel:v0.11.0-amd64 > flannel_v0.11.0_v1.tar
+
+# on offline
+docker load < flannel_v0.11.0_v1.tar
+kubectl apply -f ~/k8s/kube-flannel.yml               Add Flannel network
+
+
+
+#                                  Troubleshooting
+grep vmx /proc/cpuinfo                                Check a CPU virtualization option
+watch kubectl get pods --all namespaces               Check all necessary pods
+kubectl delete -f <path>                              Delete resources by filename
+kubeadm config print join-defaults
+kubeadm token list
+kubeadm token create
+kubeadm token create --print-join-command
+# If you need some images for offline installation
+# Open necessary yaml file then find images
+# pull these images and save to .tar
+kubectl drain <nodesname>                              Put node in maintenance mode
+
+#                        Create Service Account and granted the full access to UI
+# create dashboard-adminuser.yaml
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin-user
+  namespace: kubernetes-dashboard
+kubectl apply -f dashboard-adminuser.yaml
+# create clusterrolebinding.yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-user
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: admin-user
+  namespace: kubernetes-dashboard
+
+kubectl apply -f clusterrolebinding.yaml
+
 
 

@@ -90,7 +90,28 @@ ls -l /var/lib/mysql/
 
 
 #                                  K8s
+# ~/.kube/config    file to find info of what to connect to
+vim ~/.kube/config
+kubectl cluster-info
+kubectl get nodes
+
 kubectl run fedora --image=fedora             create a deployment
 kubectl get deployments                       show all deployments
 kubectl delete deployment fedora              delete a deployment
 kubectl run fedora --image=fedora -- /usr/bin/sleep 3600         create a deployment with a command in it
+
+#                               Minikube
+minikube start                                start the environment
+minikube status                               status of services
+minikube ssh                                  minikube prompt
+                 top                          different parameters
+                 docker ps                    show containers
+                 ps aux                       show processes
+                 ps aux | localku             show a core process in minikub env
+                 free -m                      memory
+                 df -h                        disk spaces
+minikube ip                                   show minikube ip address
+minikube dashboard                            start WEB UI
+minikube logs                                 give you the log information
+
+
