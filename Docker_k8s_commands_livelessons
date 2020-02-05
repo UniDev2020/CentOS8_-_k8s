@@ -91,12 +91,24 @@ ls -l /var/lib/mysql/
 
 #                                  K8s
 # ~/.kube/config    file to find info of what to connect to
-vim ~/.kube/config
+# cluster: the k8s cluster, user: the autorized user
+# the part of the cluster the user wants to access, typically a namespace
+vim ~/.kube/config                            specify how to connect to different clusters in one config file
+kubectl config view                           show current configuration
 kubectl cluster-info
-kubectl get nodes
+kubectl get                                   show resources are available
+            all
+            podes
+            nodes
+            deployments
+# Connecting to a Remote Cluster
+kubectl config set-cluster mycluster --server=http://ip:port --api-version=v1    to connect to the cluster
+kubectl use-context mycluster                 start using it
+# configure access multiple clusters for more information see the website
 
+kubectl run                                   create a deployment or job to manage the created containers
+kubectl run ngnix --image=nginx               create a deployment
 kubectl run fedora --image=fedora             create a deployment
-kubectl get deployments                       show all deployments
 kubectl delete deployment fedora              delete a deployment
 kubectl run fedora --image=fedora -- /usr/bin/sleep 3600         create a deployment with a command in it
 
@@ -114,4 +126,45 @@ minikube ip                                   show minikube ip address
 minikube dashboard                            start WEB UI
 minikube logs                                 give you the log information
 
+#                                Pods with YAML files
+# Specification of how to run these containers
+kubectl create -f <name>.yaml                     create a pod, if some problems use --validate=false
+# alternatively, use the Dashboard
+kubectl get pods                                  show all running pods
+kubectl get pods -o wide                               more information
+kubectl describe pods <podname>                   show all details about pods
+kubectl delete pod <podname>                      delete a pod
 
+#                                 Namespaces
+# Strict isolation between resources, it allows to create separated areas
+# It guarantees the secure environments that occurs on Linux Kernel level
+# By default k8s has three namespaces: default, kube-public, kube-system
+kubectl get ns                                    show namespaces
+kubectl create ns secret                          create a namespace
+kubectl get ns secret -o yaml                     get in yaml format for more details
+kubectl get ns secret -o json                     the same in a json format
+
+#                                   Replica Sets
+# If you create a replica set by deployment, it's shouldn't scale anymore.
+# kubectl scale --current-replicas=1 --replicas=3 deployment <podname>
+kubectl run nginx --image-nginx                   create with image from repository
+kubectl get rs                                    show replica set
+kubectl get rs <rsname> -o yaml                   show more info about the replica set
+kubectl scale --replicas=3 deployment nginx       scaled a replica set from deployment
+                                                  can scale and unscale your replicas
+kubectl delete rs <rsname>                        stop an active replica set, and deployment
+                                                  start it again
+#                                   Deployments
+# Used to create and automate replica sets
+# Instruct the cluster how to create and scale applications
+# Monitor instances of an application
+kubectl get all
+kubectl get deployments                           show the deployments
+kubectl delete deployment <depname>               delete the deployment
+kubectl describe deployment <depname>             information about dep
+
+#                                 Troubleshooting
+kubectl get deployments
+kubectl describe deployment <depname>
+kubectl describe pods <podname>
+kubectl logs <podname>
