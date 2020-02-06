@@ -116,6 +116,7 @@ kubectl run fedora --image=fedora -- /usr/bin/sleep 3600         create a deploy
 minikube start                                start the environment
 minikube status                               status of services
 minikube ssh                                  minikube prompt
+                 sudo -i                      open the root shell
                  top                          different parameters
                  docker ps                    show containers
                  ps aux                       show processes
@@ -151,7 +152,7 @@ kubectl run nginx --image-nginx                   create with image from reposit
 kubectl get rs                                    show replica set
 kubectl get rs <rsname> -o yaml                   show more info about the replica set
 kubectl scale --replicas=3 deployment nginx       scaled a replica set from deployment
-                                                  can scale and unscale your replicas
+                                                  can scale up and down your replicas
 kubectl delete rs <rsname>                        stop an active replica set, and deployment
                                                   start it again
 #                                   Deployments
@@ -162,9 +163,103 @@ kubectl get all
 kubectl get deployments                           show the deployments
 kubectl delete deployment <depname>               delete the deployment
 kubectl describe deployment <depname>             information about dep
+# Scale deployments
+kubectl scale deployment <depname> --replicas=3   scale the deployments replicas
+kubectl get deployments <depname> -o json         show all info in json, run label auto added
+kubectl get pods -Lrun                            filter the pods with a running label
+# if you remove a run label, a new pod will be auto created
+kubectl label pods <podname> run-                 delete a label run
+# Autoscale
+kubectl run nginx --image=nginx
+kubectl autoscale deployment nginx --min=2 --max=5 --cpu-percent=70
+kubectl describe deployments nginx
 
 #                                 Troubleshooting
 kubectl get deployments
 kubectl describe deployment <depname>
 kubectl describe pods <podname>
 kubectl logs <podname>
+
+#                                 Object Properties
+# Some properties allow by default
+kubectl get {deployments|rs|pods} -o yaml         overview all properties
+# apiVersion: the most recent version of the API that allow us to use this type
+# exposes functionality,
+# kind: the type of object
+# metadata: may include items not shown here such as podAffinity and nodeAffinity
+# spec: run-time parameters used by this object
+# status: current run-time status information
+
+#                                      Labels
+# String that administrators can use to select or exclude objects
+# Can be used to group objects which do not have an obvious relation by themselves
+# For example: release:stable, release:beta, environment:dev, environment:production
+# Can be used from the command line, or from YAML files to use nodeSelectors
+# nodeSelectors can be used to identify where a Pod is allowed to run
+kubectl label node <namenode> disktype=hdd      set a label
+kubectl get nodes --show-labels                 show all labels
+kubectl label pods <name> foo=bar               apply to a running pod
+kubectl get pods -Lrun                          show labels set to pods
+kubectl get pods -l run=<podname>               show label set to the pod
+kubectl get pods -Lrun -o yaml | less           show information
+kubectl label pods <podname> run-               remove the label
+
+#                                    Rolling updates
+# Is a change of properties in a deployment that needs to be pushed to the pods:
+# Current number of replicas, any other properties, like version of the image to use
+
+
+#                                    Daemon Set
+# Controller that ensure that a single pod exists on each node in the cluster
+# if a new node is added, the DaemonSet contr will add a pod automatically
+# To start using it, just set kind: DaemonSet in the app YAML file
+
+#                                   Rollback
+kubectl rollout history                         overview of past activity
+kubectl rollout undo                            failback
+#For example:
+kubectl get deployments nginx -o yaml | grep -i -A 4 strategy   show how to Rollback apply
+kubectil set image deployment nginx ngnix=nginx:1.8.1 -alpine   set to use different image
+kubectl describe pods nginx | grep -i image                     show changes in images
+kubectl rollout history deployment nginx                        show rollout history
+kubectl rollout history deployment nginx --revision=1           show rev 1
+kubectl rollout history deployment nginx --revision=2           show rev 2, after changes
+kubectl rollout undo deployment nginx --to-revision=1           undo the changes
+
+#                                  Networking
+# It has three different levels: Between containers within a Pod, between Pods, External exposure of services
+# Connecting pods to other pods across nodes (East-West traffic), without NAT
+# Service discovery and load-balancing
+# Exposing services for external clients (North-South traffic)
+# Segmenting networks to increase pod security
+# No IP masking: the IP that the pod sees is the same as how other pods see it
+#                                 Inside the Pod
+# Internal communications, handled by Docker as K8s uses the Pod as the lowest entity
+# Docker offers host private networking, where a virtual bridge "docker0" is created
+# Docker creates a Virtual Ethernet Device for each container and this is attached ro the bridge
+# eth0 within the container uses an IP addr from the docker0 bridge addr range
+# As a result Docker containers can communicate to one another only if they're on the same host
+# Inside your environment:
+brctl show                                      show a docker bridge interfaces, virtual patch cables
+docker ps                                       show all docker containers
+docker inspect <container>                      show all the info and Network Settings
+# in k8s
+kubectl get pods -o wide                        show ip addr assigned by k8s
+#                             Pod to pod networking
+# k8s uses CNI plugin to implement Pod-to-Pod
+# CNI plugins provide 3 types of networking: layer 2, layer 3, overlay networking (SoftwareDefinedNetworking)
+# layer 2: Pods and nodes see subnets used for pod IP addr as a single layer 2 domain
+# Pod-to-Pod communication happens through ARP (AddressResolutionProtocol)
+# Also need a bridge plugin, it should exists on all physical k8s hosts
+# Layer 2 configuration isn't scalable
+# Layer 3 uses routing through different plugins (flannel, calico, etc.)
+# Overlay uses plugins, and use encapsulation - which looks like VPN - to send packets between pods
+# VXLAN, GRE can be used to do so
+#                                   Exposing services
+# It's a different object to expose functionality externally
+# Refers to a set of pods which is based on labels
+# Services work with publicly accessible IP addresses
+
+
+
+
