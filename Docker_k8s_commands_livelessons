@@ -135,10 +135,20 @@ kubectl get pods                                  show all running pods
 kubectl get pods -o wide                               more information
 kubectl describe pods <podname>                   show all details about pods
 kubectl delete pod <podname>                      delete a pod
+kubectl delete pod <podname>  --grace-period=0 --forec --namespace <namespace>
 
-#                                 Namespaces
+#                                    Cgroups
+# Provide a mechanism of aggregation/partitioning sets of tasks, and all their
+# future children, into hierarchical groups with specialized behavior
+# Limits how much you can use
+# Resource metering and limiting: memory, CPU, block I/O, network, Device node access control
+
+#                                   Namespaces
 # Strict isolation between resources, it allows to create separated areas
 # It guarantees the secure environments that occurs on Linux Kernel level
+# Limits what you can use
+# Multiple ns: pid, net, mnt, uts, ipc, user, each process is in one ns of each type
+
 # By default k8s has three namespaces: default, kube-public, kube-system
 kubectl get ns                                    show namespaces
 kubectl create ns secret                          create a namespace
@@ -174,13 +184,13 @@ kubectl run nginx --image=nginx
 kubectl autoscale deployment nginx --min=2 --max=5 --cpu-percent=70
 kubectl describe deployments nginx
 
-#                                 Troubleshooting
+#                               Troubleshooting
 kubectl get deployments
 kubectl describe deployment <depname>
 kubectl describe pods <podname>
 kubectl logs <podname>
 
-#                                 Object Properties
+#                               Object Properties
 # Some properties allow by default
 kubectl get {deployments|rs|pods} -o yaml         overview all properties
 # apiVersion: the most recent version of the API that allow us to use this type
@@ -190,7 +200,7 @@ kubectl get {deployments|rs|pods} -o yaml         overview all properties
 # spec: run-time parameters used by this object
 # status: current run-time status information
 
-#                                      Labels
+#                                    Labels
 # String that administrators can use to select or exclude objects
 # Can be used to group objects which do not have an obvious relation by themselves
 # For example: release:stable, release:beta, environment:dev, environment:production
@@ -204,17 +214,17 @@ kubectl get pods -l run=<podname>               show label set to the pod
 kubectl get pods -Lrun -o yaml | less           show information
 kubectl label pods <podname> run-               remove the label
 
-#                                    Rolling updates
+#                                 Rolling updates
 # Is a change of properties in a deployment that needs to be pushed to the pods:
 # Current number of replicas, any other properties, like version of the image to use
 
 
-#                                    Daemon Set
+#                                 Daemon Set
 # Controller that ensure that a single pod exists on each node in the cluster
 # if a new node is added, the DaemonSet contr will add a pod automatically
 # To start using it, just set kind: DaemonSet in the app YAML file
 
-#                                   Rollback
+#                                  Rollback
 kubectl rollout history                         overview of past activity
 kubectl rollout undo                            failback
 #For example:
@@ -255,10 +265,38 @@ kubectl get pods -o wide                        show ip addr assigned by k8s
 # Layer 3 uses routing through different plugins (flannel, calico, etc.)
 # Overlay uses plugins, and use encapsulation - which looks like VPN - to send packets between pods
 # VXLAN, GRE can be used to do so
-#                                   Exposing services
+#                                 Exposing services
 # It's a different object to expose functionality externally
 # Refers to a set of pods which is based on labels
 # Services work with publicly accessible IP addresses
+
+#                                  Accessing Pods
+# Kubernetes Proxy, to access a k8s service locally without exposing it
+kubectl proxy &                                 start proxy in bg
+curl http://localhost:8001/version              API interface
+curl http://localhost:8001/api/v1               investigate through API
+curl http://localhost:8001/api/v1/namespaces/default/services
+
+#                                  Port-forwarding
+# Provides an easy way to connect to services running in the pod, it works on pods
+# exposed port will be available on th k8s management workstation
+kubectl port-forward --help | less              documentation
+kubectl port-forward http 8000:80               forwards port 80 on the pod to 8000 on host
+
+#                                     Services
+# Default service is created for K8s, custom services can be created using kubectl expose
+# Label selectors can be used to determine which pods are added to a service
+kubectl expose --help                            documentation and examples
+kubectl describe pod <podname>                   it can contains label sections
+kubectl label pod <podname> dept=sales           set the label
+kubectl expose pod <podname> --type="NodePort" --port=80      expose pods to service
+kubectl expose deployment <depname> --port=80 --type=NodePort
+kubectl get services                             verify that pod has been exposed
+kubectl get svc <name> -o yaml                   more info
+kubectl delete service <name>                    un-expose it, not delete the pod
+
+
+
 
 
 
