@@ -1,5 +1,6 @@
 Docker, k8s
 #                                  Docker
+# About a container: https://youtu.be/EnJ7qX9fkcU
 docker ps                                    show all your containers
 # Installing Docker
 # Remove any versions of docker:
@@ -112,7 +113,7 @@ kubectl run fedora --image=fedora             create a deployment
 kubectl delete deployment fedora              delete a deployment
 kubectl run fedora --image=fedora -- /usr/bin/sleep 3600         create a deployment with a command in it
 
-#                               Minikube
+#                                  Minikube
 minikube start                                start the environment
 minikube status                               status of services
 minikube ssh                                  minikube prompt
@@ -126,6 +127,8 @@ minikube ssh                                  minikube prompt
 minikube ip                                   show minikube ip address
 minikube dashboard                            start WEB UI
 minikube logs                                 give you the log information
+minikube addons list                          show all addons
+minikube addons enable ingress                to enable an Ingress controller
 
 #                                Pods with YAML files
 # Specification of how to run these containers
@@ -138,12 +141,14 @@ kubectl delete pod <podname>                      delete a pod
 kubectl delete pod <podname>  --grace-period=0 --forec --namespace <namespace>
 
 #                                    Cgroups
+# https://selectel.ru/blog/mexanizmy-kontejnerizacii-cgroups/
 # Provide a mechanism of aggregation/partitioning sets of tasks, and all their
 # future children, into hierarchical groups with specialized behavior
 # Limits how much you can use
 # Resource metering and limiting: memory, CPU, block I/O, network, Device node access control
 
 #                                   Namespaces
+# https://selectel.ru/blog/mexanizmy-kontejnerizacii-namespaces/
 # Strict isolation between resources, it allows to create separated areas
 # It guarantees the secure environments that occurs on Linux Kernel level
 # Limits what you can use
@@ -289,13 +294,30 @@ kubectl port-forward http 8000:80               forwards port 80 on the pod to 8
 kubectl expose --help                            documentation and examples
 kubectl describe pod <podname>                   it can contains label sections
 kubectl label pod <podname> dept=sales           set the label
-kubectl expose pod <podname> --type="NodePort" --port=80      expose pods to service
+kubectl expose pod <podname> --type="NodePort" --port=80      expose pods to the service
 kubectl expose deployment <depname> --port=80 --type=NodePort
 kubectl get services                             verify that pod has been exposed
 kubectl get svc <name> -o yaml                   more info
 kubectl delete service <name>                    un-expose it, not delete the pod
-
-
+#                                        DNS
+# DNS included, DNS name lookup from within a pod to an exposed service happens auto
+kubectl exec -it busybox -- nslookup httpd       run nslookup within deployment
+kubectl exec <podname> cat /etc/resolv.conf      show the info which use to dns
+#                                    Service type
+# Determine how service are accessed
+# ClusterIP: default, provides internal access only by exposing the service on a cluster-internal IP
+# NodePort: exposes a port on K8s hosts, each node will proxy that port into the Service
+# LoadBalancer: available in public cloud solutions. In private, if K8s provise a plugin
+#                                       Ingress
+# Uses to give services externally reachable URL
+# Best support is available for the Nginx controller
+# https://kubernetes.io/docs/concepts/service-networking/ingress/ for up to date info
+# Using Ingress: verify service availability, create an Ingress YAML file, add the Ingress
+# object to the API, access the service using the Ingress rule
+kubectl create -f nginx.yaml                    create an Ingress
+kubectl get ingress                             show ingresses
+kubectl get ingress nginx-ingress -o yaml       more details about it
+curl -k https://<ip>/nginx                      connect to insecure mode
 
 
 
