@@ -129,6 +129,9 @@ minikube dashboard                            start WEB UI
 minikube logs                                 give you the log information
 minikube addons list                          show all addons
 minikube addons enable ingress                to enable an Ingress controller
+# Prepair the hostPath persistent Volume
+mkdir /mnt/data
+echo "Kubernetes Storage" > /mnt/data/index.html
 
 #                                Pods with YAML files
 # Specification of how to run these containers
@@ -319,6 +322,47 @@ kubectl get ingress                             show ingresses
 kubectl get ingress nginx-ingress -o yaml       more details about it
 curl -k https://<ip>/nginx                      connect to insecure mode
 
+#                                   Using Volumes
+# Accessing volumes:
+# RWO (ReadWriteOnce) allows read-write access by one node
+# ROX (ReadOnlyMany) allows read-only by multiple nodes
+# RWX (ReadWriteMany) allows read-write by many nodes
+# Create Volume
+kubectl create -f volumes.yaml --validate=false
+kubectl get pods
+kubectl describe pods morevol | less
+# Test that you can use it
+kubectl exec -it morevol -c centos -- touch /centos/test
+kubectl exec -it morevol -c centos2 -- ls -l /centos2
+#                                     Persistent Volumes
+# PV is an independent K8s resource
+# PV isn't dependent from any pod and therefore survives a pod
+# PVClaim is a request to use PV, spec storage prop can be req
+# Lifecycle
+# Provisioning: PVs can be provisioned statically or dynamically
+# Binding: the user requests access to a PV using a PVC
+# Using: pods use claims as volumes
+# Reclaiming: what happens after the user is done
+# Volumes can be in different states:
+# Retain: keeps data intact
+# Delete: deletes the API object as well as the storage
+# Recycle: removes contents of the storage mountpoint
+# Create a PersistentVolume
+# Create pv.yaml
+kubectl create -f pv.yaml
+kubectl get pv
+# Create a PVClaim
+# Create pvc.yaml
+kubectl create -f pvc.yaml
+kubectl get pv pv-volume
+kubectl get pvc pv-claim
+# Create a Pod
+# Create pv-pod.yaml
+kubectl create -f pv-pod.yaml
+kubectl get pod pv-pod
+kubectl exec -it pv-pod -- /bin/bash
+apt-get update; yapt-get install curl
+curl localhost
 
 
 
