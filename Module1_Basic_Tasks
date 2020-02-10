@@ -1,6 +1,6 @@
 RHEL, CentOS 8
 #                                          Module 1
-Console
+# Console
 Ctrl+Shift+'+'                                    bigger font
 Ctrl+'-'                                          smaller font
 <tab>                                  automatically complete command
@@ -387,6 +387,8 @@ ssh-copy-id [ip]                     copy public key to remote machine
 # People, use regular user accounts /bin/bash
 #                                   /sbin/nologin
 root: uid 0
+id                                  info about current user
+id <user>                            info about a user
 
 #                            Create user
 # Linux work with user id not with username, don’t change uid
@@ -395,13 +397,20 @@ root: uid 0
 
 user +<tab> + <tab>                 Show all users commands
 useradd linda                       create a user linda
+
 tail –n 1 /etc/passwd               show last line in passwd file
 tail –n 1 /etc/shadow               show other property for user
 cd /home                            change dir to home dir
+pwd                                 show current dir
+echo $HOME                          show path to home dir of a current user
+echo $PATH                          show path to execute user files
 ls –l                               show all home dir for users
 ls –al                              show files in the home dir
-                              it has specific bash conf files for user
-                                         from /etc/skel file
+                                    it has specific bash conf files for user
+                                    from /etc/skel file
+ls -ld <dir>                        info about a dir owner
+
+
 userdel –f                    remove user even if the user still login
 userdel –r                    with home dir and mail spool
 userdel –rf                   remove user completely

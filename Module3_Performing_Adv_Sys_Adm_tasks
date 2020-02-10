@@ -1,0 +1,75 @@
+RHEL, CentOS 8
+#                                          Module 3
+# Basic Kernel Management
+# Shell, syscall ->
+# -> Kernel: initramfs, systemd-udevd, modprobe ->
+# -> Driver-modules for Hardware
+# lsmod to list currently loaded kernel modules
+lsmod | grep vfat                                  list a necessary module
+modprobe vfat                                      manually load a module
+lsmod | grep vfat                                  check this module again
+modprobe -r vfat                                   unloaded module from memory
+#                                         modprobe
+# load a kernel module and all its dependencies
+# specify kernel module parameters, edit /etc/modprobe.conf or the files in /ect/modprobe.d
+lsmod                                              list of modules
+modinfo <module>                                   show module parameters
+vim /etc/modprobe.d/kvm.conf                       kvm module conf file, kernel level virt
+modprobe kvm                                       load a kvm module
+#                                          /proc
+# is a file system that provides access to kernel information:
+# PID directories, contain information about running processes
+# Status files, what exactly is happening in the system
+# Tunables in /proc/sys, allow to change kernel behavior in real time
+# echo to any file in /proc/sys to change kernel perf parameters
+# write the param to /etc/sysctl.conf to make them persistent
+# add a file with .conf to /etc/sysctl.d/ to apply the param is wanted to add
+# check more param files in /usr/lib/sysctl.d those from rpm packages
+mount | grep proc                                  provide an access to a kernel interface
+cd /proc && ls                                     what the kernel currently is doing
+cat meminfo                                        detail info about memory
+sysctl -a                                          show list of all current settings
+cd /proc/sys                                       many aspects of a Linux kernel, tuning int
+cd /proc/sys/net/ipv4 && echo 1 > ip_forward       change a param in runtime
+sysctl -a                                          show many parameters
+sysctl -a | grep forward                           check the parameters
+vim /etc/sysctl.conf                               edit to save changes persistently
+> net.ipv4.ip_forward = 1                          it will make a change persistent
+#                                   Updating a kernel
+# Linux kernel are not technically updated, a new kernel is installed beside the old kernel
+# allows admin to boot the old kernel in case anything goes wrong
+# yum update kernel or yum install kernel
+
+#                                   Linux boot procedure
+# First is power on self test (post), then read BIOS or UEFI, GRUB boot loader is loaded
+# GRUB has a menu where you choose specific arguments to load Kernel, it has initramfs
+# then systemd process, its a manager of everything, base-os and services, then login
+#                            Modifying Grub2 runtime parameters
+# from Grub2 boot menu, press "e" to edit runtime boot options
+# press "c" to enter the Grub2 command mode, type help for an overview options
+# Persistent parameters in /etc/default/grub
+# After writing changes, compile changes to grub.cfg
+# grub2-mkconfig -o /boot/grub2/grub.cfg
+# grub2-mkconfig -o /boot/efi/EFI/redhat/grub.cfg
+mount | grep '^/' | grep -i efi                     check if we have a UEFI mounts
+vim /etc/default/grub                               edit a config file
+grub2-mkconfig -o /boot/grub2/grub.cfg              write the changes
+#                                   Systemd targets
+# its a group of unit files
+# some targets are isolated: emergency.target, rescue.target, multi-user.target, graphical.target
+# when enabling a unit, its added to a specific target
+systemctl list-dependencies                         list of all targets and dependencies
+systemctl enable httpd                              every service should be enable into
+systemctl cat httpd                                 can see where this server enable
+systemctl cat multi-user.target                     show whats inside the target
+cd /etc/systemd/system/multi-user.target.wants/     symbolic links for the services
+#                                    Default targets
+systemctl get-default                               see the current default target
+systemctl set-default                               set a new default target
+systemctl set-default multi-user.target && reboot   set a non-graphical mode
+systemctl set-default graphical.target && systemctl start graphical.target     graphical
+#                                    Specific target
+# On the Grub2 boot prompt, use systemctl.unit=<name>.target to boot into a spec target
+# To change between targets on a running system, use systemctl isolate <name>.target
+systemctl list-units                                show all started units
+systemctl isolate emergancy.target                  load the emergency target
