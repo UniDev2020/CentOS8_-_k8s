@@ -1,0 +1,113 @@
+#                                          PostgreSQL
+# add datastore, create FS and mount a folder for PostgresDB
+# label prefered host
+kubectl label node <nodename> dbtype=postgre
+# download and save all necessary images on master and nodes
+# create four YAML files:
+# postgres-configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  labels:
+    app: postgres-container
+data:
+  POSTGRES_DB: postgresdb
+  POSTGRES_USER: postgresadmin
+  POSTGRES_PASSWORD: aaabbbccc
+
+# postgres-storage.yaml
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: postgres-pv-volume
+  labels:
+    type: local
+    app: postgres-container
+spec:
+  storageClassName: manual
+  capacity:
+    storage: 5Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: "/mnt/data"
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: postgres-pv-claim
+  labels:
+    app: postgredb
+spec:
+  storageClassName: manual
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 5Gi
+
+# postgres-deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: postgres
+spec:
+  replicas: 1
+  selector:
+    MatchLabels:
+      app: postgres-container
+  template:
+    metadata:
+      labels:
+        app: postgres-container
+    spec:
+      nodeSelector:
+        dbtype: postgre
+      containers:
+        - name: postgres
+          image: postgres: 10.4
+          imagePullPolicy: "IfNotPresent"
+          ports:
+            - containerPort: 5432
+          envFrom:
+            - configMapRef:
+                name: postgres-config
+          volumeMounts:
+            - mountPath: /var/lib/postgresql/data
+              name: postgredb
+      volumes:
+        - name: postgredb
+          persistentVolumeClaim:
+            claimName: postgres-pv-claim
+
+# postgres-service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres
+  labels:
+    app: postgres-container
+spec:
+  type: NodePort
+  ports:
+   - port: 5432
+  selector:
+   app: postgres-container
+
+# To start the environment
+kubectl create -f postgres-configmap.yaml
+kubectl create -f postgres-storage.yaml
+kubectl create -f postgres-deployment.yaml
+kubectl create -f postgres-service.yaml
+kubectl get svc postgres
+psql -h <wr01ipaddress -U postgresadmin --password -p <portnumber> postgresdb              check availability
+
+# To delete
+# kubectl delete service postgres
+# kubectl delete deployment postgres
+# kubectl delete configmap postgres-config
+# kubectl delete persistentvolumeclaim postgres-pv-claim
+# kubectl delete persistentvolume postgres-pv-volume
+
+

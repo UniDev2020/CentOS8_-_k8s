@@ -403,11 +403,12 @@ vim /etc/fstab
 # if you use  parted <part-numb> set <number> lvm on, if fdisk you can use type 8e
 # Use pvcreate /dev/sdb1 to create a physical volume (pv)
 pvs                                            show physical volumes
-# vgcreate vgada /dev/<partition> ro create a volume group
+# vgcreate vgdata /dev/<partition> ro create a volume group
 vgs                                            show volume groups
 # lcreate -n lvdata -L 1G vgdata to create the logical volume
-lgs                                            show logical volumes
+lvs                                            show logical volumes
 # mkfs.xfs /dev/vgdata/lvdata
+
 # then to /etc/fstab to mount it persistently
 # After created LVM Device mapper generates meaningless names, like /dev/dm-0
 # Meaningful names are provided as symbolic links through /dev/mapper: /dev/mapper/vgdata-lvdata

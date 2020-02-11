@@ -17,10 +17,10 @@ modinfo <module>                                   show module parameters
 vim /etc/modprobe.d/kvm.conf                       kvm module conf file, kernel level virt
 modprobe kvm                                       load a kvm module
 #                                          /proc
-# is a file system that provides access to kernel information:
+# is a file system that provides access to a kernel information:
 # PID directories, contain information about running processes
 # Status files, what exactly is happening in the system
-# Tunables in /proc/sys, allow to change kernel behavior in real time
+# Tunables in /proc/sys, allows to change kernel behaviors in realtime
 # echo to any file in /proc/sys to change kernel perf parameters
 # write the param to /etc/sysctl.conf to make them persistent
 # add a file with .conf to /etc/sysctl.d/ to apply the param is wanted to add
