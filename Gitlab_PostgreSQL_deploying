@@ -1,3 +1,4 @@
+Gitlab, PostgreSQL
 #                                          PostgreSQL
 # add datastore, create FS and mount a folder for PostgresDB
 # label prefered host
@@ -102,6 +103,8 @@ kubectl create -f postgres-deployment.yaml
 kubectl create -f postgres-service.yaml
 kubectl get svc postgres
 psql -h <wr01ipaddress -U postgresadmin --password -p <portnumber> postgresdb              check availability
+postresdb=# \list                                                                          show all databases
+
 
 # To delete
 # kubectl delete service postgres

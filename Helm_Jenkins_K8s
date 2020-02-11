@@ -1,0 +1,47 @@
+Helm Jenkins
+#                                            Helm
+helm help                                                    list of commands
+helm home                                                    home dir of helm
+helm install --<values> --<name>                             install with custom options
+helm fetch <repo>/<chart>                                    fetch the chart on local server
+helm list                                                    list installed applications
+helm status                                                  show the status of app deployment
+helm search                                                  search a chart
+helm inspect <repo>/<chart>                                  show whats inside an app
+helm repo list                                               show helm repositories
+helm repo update                                             update the existing repository
+helm upgrade                                                 upgrade a chart
+helm rollback                                                rollback a chart
+helm delete                                                  delete a deployment
+helm delete --purge                                          delete completely
+helm reset                                                   completely delete tiller from a cluster
+# Some info about current k8s cluster
+kubectl cluster-info
+kubectl get nodes
+kubectl version --short
+kubectl get all
+# Install helm
+# Prerequisites
+# Download the necessary version https://github.com/helm/helm/releases binary in tar
+tar -zxvf <helm-version>.tar.gz
+mv linux-amd64/helm /usr/local/bin/helm
+which helm
+helm version --short --client
+# Create a service account
+kubectl -n kube-system create serviceaccount tiller
+# Create a cluster role binding
+kubectl create clusterrolebinding tiller --clusterrole cluster-admin --serviceaccount=kube-system:tiller
+kubectl get clusterrolebinding tiller
+# Initialize helm
+kubectl -n kube-system get pods                               check the tiller pod hasn't already exist
+helm init --service-account tiller                            tiller is deployed
+kubectl -n kube-system get deploy,replicaset,pod,serviceaccount,clusterrolebinding | grep tiller
+
+#                                          Jenkins through helm
+helm fetch stable/jenkins
+tar zxf jenkins-0.28.9.tgz
+cd jenkins
+ls templates                                                   list templates of jenkins manifests
+
+
+
