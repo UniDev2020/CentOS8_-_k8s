@@ -308,6 +308,7 @@ systemctl status systemd-journald          it shows that journal in use
 # parted is default utility in RHEL 8
 
 lsblk                                        list block devices
+cat /proc/partitions                         list of available disks
 parted /dev/nvme0n1                          info about device
 
 ls -l /dev/nvm*                              show nvme disks
@@ -403,7 +404,7 @@ vim /etc/fstab
 # if you use  parted <part-numb> set <number> lvm on, if fdisk you can use type 8e
 # Use pvcreate /dev/sdb1 to create a physical volume (pv)
 pvs                                            show physical volumes
-# vgcreate vgdata /dev/<partition> ro create a volume group
+# vgcreate vgdata /dev/<partition> ro          create a volume group
 vgs                                            show volume groups
 # lcreate -n lvdata -L 1G vgdata to create the logical volume
 lvs                                            show logical volumes

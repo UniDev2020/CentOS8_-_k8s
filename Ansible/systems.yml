@@ -1,0 +1,47 @@
+---
+  - name: base systems configurations for all linux servers
+    hosts: prod
+    become: true
+    tasks:
+      - name: create admin user
+        user:
+          name: admin
+          state: present
+          uid: 5001
+
+      - name: romove user dojo if present
+        user:
+          name: dojo
+          state: absent
+
+      - name: install tree
+        yum:
+          name: tree
+          state: present
+
+      - name: install ntp
+        yum:
+          name: ntp
+          state: installed
+
+      - name: start ntp service
+        service:
+          name: ntpd
+          state: started
+
+  - name: configuring app servers only
+    hosts: app
+    become: true
+    gather_facts: false
+    tasks:
+      - name: create a deploy user
+        user:
+          name: deploy
+          state: present
+
+      - name: install git
+        package:
+          name: git
+          state: installed
+
+

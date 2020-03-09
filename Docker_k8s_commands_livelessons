@@ -194,9 +194,10 @@ kubectl describe deployments nginx
 
 #                               Troubleshooting
 kubectl get deployments
-kubectl describe deployment <depname>
-kubectl describe pods <podname>
-kubectl logs <podname>
+kubectl describe deployment <depname>                    deployment description
+kubectl describe po <podname>                            pod description
+kubectl logs <podname>                                   show a pod log
+kubectl logs <podname> --previous                        show logs from previous statement of a pod
 
 #                               Object Properties
 # Some properties allow by default

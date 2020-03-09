@@ -1,0 +1,38 @@
+#                           Deploy a static site
+# create a playbook with the following specifications
+#   It should apply only on lb host
+#   should use become method
+#   should add a repo (yum_repo) for nginx with gpgcheck=no and
+#   baseurl=http://nginx.org/packages/centos/6/x86_64
+#   should install and start nginx service
+#   should install git
+#   should deploy a sample html app into the default web root
+#   dir of nginx using ansible's git module.
+#      Source repo: https://github.com/schoolofdevops/html-sample-app.git
+#      Deploy path: /usr/share/nginx.html/app
+#   Once deployed, validate the site by visiting http://codebox_ip:8080/app
+#
+---
+  - name: configuring lb servers only
+    hosts: lb
+    become: true
+    gather_facts: false
+    tasks:
+      - name: add a repository
+        yum_repository:
+          name: nginx
+          description: nginx YUM repo
+          gpgcheck: no
+          baseurl: http://nginx.org/packages/centos/6/x86_64
+
+      - name: install nginx
+          package:
+            name:
+              - nginx
+              - git
+            state: installed
+
+      - name: start nginx
+          package:
+            name: nginx
+            state: started

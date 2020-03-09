@@ -543,6 +543,7 @@ vim .bash_profile              insert here umask 027 as example
 
 # SetUserID very dangerous
 chmod 4770 <file>
+# Set sticky-bit and sgid-bit
 chmod 3770 <file>                          members of groups r/w other not perm at all
                                            and users can delete just their files
 chmod u+s <file>
@@ -556,7 +557,7 @@ chmod g+s <dir>
 # StickyBit
 chmod 1770 <dir>                           it permits to delete files only owners of file or dir
 chmod +t <dir>
-
+# Suid
 chmod +x [file]
 chmod u+s [file]                           if user open file, it’ll run as root
 

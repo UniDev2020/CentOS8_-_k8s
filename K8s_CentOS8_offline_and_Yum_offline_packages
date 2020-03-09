@@ -178,6 +178,9 @@ kubectl logs --namespace kube-system <podname>        Show logs if exist pod cid
 # Pull images from recommended.yaml file
 # change the raw with imagePullPolicy to Never
 kubectl apply -f ~/k8s/recommended.yaml
+kubectl proxy
+# in browser http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/.
+
 
 
 #                                  Troubleshooting
@@ -221,6 +224,29 @@ subjects:
 
 kubectl apply -f clusterrolebinding.yaml
 
+
+#                                             Proxy
+vim /etc/profile.d/squid.sh
+#
+PROXY_URL="<ip>:<port>"
+HTTP_PROXY=$PROXY_URL
+HTTPS_PROXY=$PROXY_URL
+FTP_PROXY=$PROXY_URL
+http_proxy=$PROXY_URL
+https_proxy=$PROXY_URL
+ftp_proxy=$PROXY_URL
+export HTTP_PROXY HTTPS_PROXY FTP_PROXY http_proxy https_proxy ftp_proxy
+#
+source /etc/profile.d/squid.sh
+
+#                                         DNF through proxy
+vim /etc/dnf/dnf.conf
+#
+proxy=http://server1.cyberciti.biz:3128
+proxy_username=vivek
+proxy_password=secretePasswordHeres
+
+
 #                                 Docker images behind a proxy
 First, create a systemd drop-in directory for the Docker service:
 mkdir /etc/systemd/system/docker.service.d
@@ -233,9 +259,9 @@ mkdir /etc/systemd/system/docker.service.d
 > Environment="HTTP_PROXY=http://proxy.example.com:80/"
 > Environment="NO_PROXY=localhost,127.0.0.0/8,docker-registry.somecorporation.com"
 # Flush changes:
-$ sudo systemctl daemon-reload
+systemctl daemon-reload
 # Verify that the configuration has been loaded:
-$ sudo systemctl show --property Environment docker
+ systemctl show --property Environment docker
 > Environment=HTTP_PROXY=http://proxy.example.com:80/
 # Restart Docker:
 $ sudo systemctl restart docker

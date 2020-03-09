@@ -1,0 +1,167 @@
+Ansible, EX407
+gitter.im/schoolofdevops
+#                                             Ansible
+# Role it's a complete script which including tasks, files and variables.
+# Case #1
+# Load balancer: haproxy, two servers: apache web server + php + app, db mysql
+# Three different tiers
+# Each playbook for each configuration: system.yml, site.yml, update.yml
+#                                          Code structure
+# Ansible-repo -> environments-> dev | prod
+#              -> group_vars  -> prod | dev | all
+#              -> roles       -> php | apache | mysql | haproxy | systems
+#    -> site.yml | app.yml | db.yml | lb.yml | systems.yml | update.yml | ansible.cfg
+#                                           Configuration
+# Configuration file path: /etc/ansible/ansible.cfg
+# can be created from other path (home, current dir)
+# config files precedence: /etc/ansible/ansible.cfg, ~/.ansible.cfg, ./ansible.cfg, ANSIBLE_CONFIG, command line flags
+# Best practise: ./ansible.cfg in our own repository
+ansible --version                              show current version and config path
+ansible-config view                            show current configuration
+ansible-config dump                            show complete configuration
+ansible-config list                            show parameters in the config file
+#                                            Inventories
+# List of servers ansible is to manage, looks like /etc/hosts file
+# it includes hosts, groups, connection info, hostvars, groupvars
+# to check the connections you should be in the inventory file folder
+# and push ssh key on servers
+ansible all -m ping                            check the connection to all host
+#                                           Host patterns
+ansible all -m <module> -a <args>              all is a host pattern, define hosts or group of hosts
+# wildcards: all, '*", app*, *.domain.com  hosts/groups: app1, app1:app2, db, app:lb
+# subscripts: app[0], app [-1], prod[0:3], prod[2:]    exclusion: 'prod:!db'
+# intersection: 'prod:&app'    regex: '~(app|db).*'    --limit: restrict execution to set only
+ansible '*" -m ping                             running on all host parallel
+ansible all -a "hostname"                                           raw command
+ansible '~(app|db)' -m ping
+ansible all -f 1 -a "free"                      running on one host at a time
+ansible '~(app|db).*' -a "free"
+ansible '~(app|db).*' -b -a "yum install -y vim"      run as a sudo
+#                                 Modules and Desire State Configuration
+# Params include desired state
+# Ansible ships with a library of 450+ modules, 21 categories
+# every info in documentation, it includes state description and examples
+ansible-doc --list | wc -l                            shows amount of tools
+ansible-doc --help
+ansible-doc --list | head
+ansible-doc user
+ansible-doc -s user
+ansible app -m yum -s -a "name=ntp state=installed"   module name, key value, arguments
+# procedural vs desired state
+ansible lb -s -a "yum install -y vim"
+ansible lb -s -m yum -b -a "name=vim state=present"   module and attributes
+
+# Several examples
+# create a group
+ansible prod -m group -b -a "name-admin state=present gid=7045"
+# create a user
+ansible 'prod:!db' -m user -b -a "name=abc state=present uid=7001 group=admin"
+ansible 'prod:!db' -a "id abc"                        show the info about a user
+# copy a file
+ansible app -m copy -a "src=test.txt dest=/tmp/test.txt mode=644 "
+
+#                                 Commands Modules
+# Core: raw, bypass modules subsys and execute raw ssh command (without python)
+# command, execute a command on a remote node without shell
+# shell, execute a command on a remote node with /bin/sh
+# script, copy a script to the remote node and execute it
+# expect, execute a interactive command and auto respond to prompts
+ansible all -m command -a "cat /etc/issue"            check the version of Linux
+ansible prod -m command -a "free | grep swap"         directly invoke a command
+ansible prod -m shell -a "free | grep -i swap"        use shell
+ansible prod -vvvv -m raw -a "free | grep -i swap"    inside a target node (if it doesn't install Python)
+# create a directory
+ansible app -m command -a "mkdir /tmp/dir1 creates=/tmp/dir1"  create and check if already exists
+#                               Ansible console REPL shell
+ansible-console --help
+ansible-console -b                             enter with root privileges
+                  ? <module>                   show the info about a module
+                 list-hosts                    show a list with hosts
+               <module> <command>              execute a specific command
+#                                     Ansible playbook
+ansible-playbook <file>.yml --syntax-check     check a YAML file
+ansible-playbook <file>.yml --lists-hosts      show hosts from YAML file
+ansible-playbook <file>.yml --lists-tasks      show description of tasks
+ansible-playbook <file>.yml --lists-tags       show description of tags
+ansible-playbook <file>.yml --check            validate changes
+ansible-playbook <file>.yml --step                             step by step
+ansible-playbook <file>.yml --limit @/tmp/systems.retry      show hosts where failed
+ansible-playbook <file>.yml --start-at-task="create a deploy user"  execute what needs
+ansible-playbook <file>.yml --limit app        only on app servers
+
+
+### validate prereq
+ansible-console prod
+                     command id admin          check the user
+                     command id deploy
+ansible-console app
+                     command which git         check the app
+
+#                                         Roles
+# tasks - action to take using modules, defaults - default properties/vars, vars - role specific vars,
+# files - static files to be copied to nodes, templates - files generated dynamically,
+# handlers - action to take on events, test - ansible tests, meta - role meta data
+# Ansible Galaxy helps to find tested role
+ansible-galaxy --help
+ansible-galaxy init --init-path roles/ apache
+tree roles/apache/
+
+# Several examples
+# create a role for installing and conf apache web server on CentOS platform
+ansible-galaxy init --offline --init-path=roles apache
+# create tasks
+# create yaml file included role
+# check a progress through commands
+ansible app -b -a "which httpd"
+ansible app -b -a "service httpd status"
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#                                        Ansible installing
+dnf install https://dl.fedoraproject.org/pub/epel/epel-release-latest-8.noarch.rpm -y
+dnf install ansible
+ansible --version
+#                                         AWX installing
+dnf install epel-release -y
+dnf install git gcc gcc-c++ nodejs gettext device-mapper-persistent-data lvm2 bzip2 python3-pip
+dnf config-manager --add-repo=https://download.docker.com/linux/centos/docker-ce.repo
+dnf list docker-ce --showduplicates | sort -r
+dnf install https://download.docker.com/linux/centos/7/x86_64/stable/Packages/containerd.io-1.2.6-3.3.el7.x86_64.rpm
+yum -y remove podman
+dnf install docker-ce-3:18.09.1-3.el7
+rpm -qa | grep docker
+docker --version
+systemctl start docker && systemctl enable --now docker.service
+alternatives --set python /usr/bin/python3
+pip3 install docker-compose
+git clone https://github.com/ansible/awx.git
+cd ./awx/installer/ ; vim inventory
+sudo firewall-cmd --permanent --zone=trusted --change-interface=br-$(sudo docker network ls -f name=awxcompose_default -q)
+sudo firewall-cmd –reload
+ansible-playbook -i inventory install.yml
+
+
+#                                        Troubleshooting
+docker logs -f aws_tasks
+# to uninstall
+docker rm -f $(docker ps -aq)
+docker rmi -f $(docker images -q)
+cd ~ ; rm -rf .awx

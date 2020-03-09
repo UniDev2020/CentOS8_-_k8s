@@ -36,6 +36,8 @@ kubectl get clusterrolebinding tiller
 kubectl -n kube-system get pods                               check the tiller pod hasn't already exist
 helm init --service-account tiller                            tiller is deployed
 kubectl -n kube-system get deploy,replicaset,pod,serviceaccount,clusterrolebinding | grep tiller
+helm repo add stable https://kubernetes-charts.storage.googleapis.com/       add a stable repository
+helm search repo stable                                                      show all installed charts
 
 #                                          Jenkins through helm
 helm fetch stable/jenkins
