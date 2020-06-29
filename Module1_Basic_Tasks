@@ -63,7 +63,7 @@ ls >> lsfile                            add output to existing lsfile
 
 ls ljdsfohl 2> errors                   redirect errors to a file
 grep hello /proc/* 2> /dev/null         show hello and put errors to null
-grep -R student /ect 2> /dev/null       show with recursive subdir and put errors to null
+----->!!! grep -R student /ect 2> /dev/null       show with recursive subdir and put errors to null
 ls -l /etc | wc                         show how many files, how many lines
 ls -l /etc | less                       show line by line
 ls -l /etc | grep host                  show with host in name

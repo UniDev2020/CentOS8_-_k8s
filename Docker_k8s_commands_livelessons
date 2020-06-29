@@ -89,6 +89,15 @@ ls -l /var/local/mysql/
 docker -exec -it mariadb /bin/bash
 ls -l /var/lib/mysql/
 
+#                               Docker-compose
+
+#Steps to rebuild containers:
+#stop docker compose: $ docker-compose down
+#
+#remove the container: $ docker system prune -a
+#
+#start docker compose: $ docker-compose up -d
+#
 
 #                                  K8s
 # ~/.kube/config    file to find info of what to connect to
@@ -162,6 +171,7 @@ kubectl get ns                                    show namespaces
 kubectl create ns secret                          create a namespace
 kubectl get ns secret -o yaml                     get in yaml format for more details
 kubectl get ns secret -o json                     the same in a json format
+kubens <namespace>                                change active namespace
 
 #                                   Replica Sets
 # If you create a replica set by deployment, it's shouldn't scale anymore.
@@ -198,6 +208,11 @@ kubectl describe deployment <depname>                    deployment description
 kubectl describe po <podname>                            pod description
 kubectl logs <podname>                                   show a pod log
 kubectl logs <podname> --previous                        show logs from previous statement of a pod
+kubectl cluster-info                                     show cluster info
+kubectl cluster-info dump --all-namespaces \             collect and create a dump file
+ --output-directory=$PWD/cluster-state
+
+
 
 #                               Object Properties
 # Some properties allow by default
@@ -364,6 +379,7 @@ kubectl get pod pv-pod
 kubectl exec -it pv-pod -- /bin/bash
 apt-get update; yapt-get install curl
 curl localhost
+
 
 
 

@@ -1,0 +1,28 @@
+Git commands
+
+git config --global user.name "FirstName Surname"                 Add user configuration
+git config --global user.email "email"
+git config -l
+cat /home/<user>/.gitconfig
+
+git init .                                                        Create git db
+git status                                                        Show status
+git add *                                                         Add files to git staging (Staged)
+git commit -m "<short mes> <full mes>"                            Add files to git db (Copy to local Repository)
+git log                                                           Show all changes
+git log -1 -p                                                     Show last commit and changes
+git checkout -- <file>                                            Redo changes in file
+git diff --staged                                                 Show info about current staged
+
+vim .gitignore                                                    Add ignored files
+
+git push origin                                                   Send git changes to repository
+git remote -v                                                     Show current remote project and provider
+git remote set-url origin <ssh-url>
+
+
+
+
+Git settings
+pbcopy < ~/.ssh/id_rsa.pub                                        Copy ssh key to buffer
+

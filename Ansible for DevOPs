@@ -115,6 +115,11 @@ ansible-galaxy init --offline --init-path=roles apache
 ansible app -b -a "which httpd"
 ansible app -b -a "service httpd status"
 
+#                                    Vars and Templates
+hash_behaviour=merge
+#
+ansible-config dump | grep HASH
+
 
 
 

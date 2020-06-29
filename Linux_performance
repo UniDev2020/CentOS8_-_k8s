@@ -1,0 +1,25 @@
+top
+
+Load Average                                                How many processes stay in a queue
+CPU:
+us                                                          user spaces CPU time
+sy                                                          system spaces CPU time
+ni                                                          low priority process CPU time
+id                                                          idle CPU time
+wa                                                          i/o devices operations CPU time
+hi                                                          hardware interruption CPU time
+si                                                          software interruption CPU time
+st                                                          stolen CPU time
+
+
+top
+> 1                                                         show processors
+
+fdisk -l /dev/sda                                           info about disk
+iotop
+iostat
+iostat -x -m -t 1 /dev/sda
+
+pvs                                                         info about physical devices
+
+dd if=/dev/zero of=/dev/null bs=4096 iflag=direct           translate zeros without cache

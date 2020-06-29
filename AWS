@@ -1,0 +1,21 @@
+awscli commands
+                EC2 - Elastic Compute Cloud              S3 - Simple Storage Service
+aws configure                                                             Add user config
+
+S3 commands
+aws s3 mb s3://<bucket name> --region=us-west-1 --profile=writer          Create a bucket
+aws s3 ls                                                                 Show all buckets
+aws s3 cp <file path> s3://<bucket name>                                  Copy file to bucket
+aws s3 sync . s3://<bucket name>                                          Synchronise folder
+
+
+
+
+
+
+
+
+
+
+
+AWS CodeCommit

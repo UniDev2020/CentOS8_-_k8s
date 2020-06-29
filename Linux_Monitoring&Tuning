@@ -1,0 +1,33 @@
+                                        CPU
+lscpu                                                           info about CPU,
+nproc                                                           number of processes,
+uptime                                                          time, user, load aver
+cat /proc/loadavg                                               load average
+                                    Glances tool
+# monitoring tool
+vim /etc/default/glances - set True
+service glances start
+                                    Memory and Swap
+cat /proc/meminfo
+free -m
+# vmstat - reports the Linux system virtual memory statistics
+# it also reports info about processes, mem, paging, block IO, traps, desks, CPU act
+vmstat -s                                                       memory info
+vmstat -a                                                       active/inactive page
+vmstat 2 10                                                     with intervals
+# dmidecode - is a DMI table decoder, firstly read system sysfs, next read directly from mem
+dmidecode --type baseboard                                      SMBIOS info
+dmidecode --type system                                         system info
+# htop -
+                                I/o operations on disk
+iostat sdb -xdk
+ioping /dev/sda                                                 device I/o ping util
+iotop --only                                                    actual i/o
+                                      Network
+sysstat                                                         perf and troubleshoot util
+mpstat -p ALL
+net-tools                                                       tools for network troubleshooting
+netstat -tulpn                                                  active internet connections
+netstat -nat                                                    tcp/udp listening
+iotop - utils
+nethogs -

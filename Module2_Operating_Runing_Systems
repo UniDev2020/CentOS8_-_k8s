@@ -124,10 +124,17 @@ cat > /etc/yum.repos.d/base.repo << EOF
 > [BaseOS]
 > name=BaseOS
 > baseurl=file:///repo/BaseOS
-> gpgcheck=0
+> gpgcheck=0f
 > EOF
 # Show YUM repositories
 yum repolist
+                                  After install nginx for http local repo
+# Configure nginx with SELinux
+ausearch -c ‘nginx’ —raw | audit2allow -M my-nginx
+semodule -X 300 -i my-nginx.pp
+#Regular file-system permissions
+restorecon -R /var/www/html/repos
+
 
 #                   Modules and Application Streams
 #  Use yum to install an application
