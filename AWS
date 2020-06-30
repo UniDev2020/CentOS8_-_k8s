@@ -1,5 +1,7 @@
 awscli commands
                 EC2 - Elastic Compute Cloud              S3 - Simple Storage Service
+                EBS - Elastic Block Store                EFS - Elastic File System
+                AMI - Amazon Machine Image
 aws configure                                                             Add user config
 
 S3 commands

@@ -22,7 +22,6 @@ git remote set-url origin <ssh-url>
 
 
 
-
 Git settings
 pbcopy < ~/.ssh/id_rsa.pub                                        Copy ssh key to buffer
 

@@ -1,0 +1,97 @@
+https://www.youtube.com/watch?v=dHsv8EnhSgQ&list=PLhgRAQ8BwWFa7ulOkX0qi5UfVizGD_-Rc
+
+created in 2004
+cashe and stream video
+Reverse proxy
+
+NGINX vs Apache
+
+Apache - prefork - 1 query - 1 process - use module program languages per process with dynamic query
+work with each dynamic query, has max connections
+Configuration: use directory blocks
+
+
+Nginx - multi queries in 1 process, don't use program languages - dynamic query through php-fpm and back to query from user
+work with static resources, more effective and fast, can work with 1000 queries in 1 throughput
+Configuration: use uri, can work as a load balancer and mail server
+
+Install from binaries
+Dependencies:
+sudo apt-get install libpcre3 libpcre3-dev libpcrecpp0 libssl-dev zlib1g-dev     Add regular expr, ssl, compress static resources
+
+Configure:
+./configure --sbin-path=/usr/bin/nginx --conf-path=/etc/nginx/nginx.conf --error-log-path=/var/log/nginx/error.log /
+--http-log-path=/var/log/nginx/access.log --with-debug --with-pcre --with-http_ssl_module
+
+Built:
+make
+Install:
+sudo make install
+ls -l /etc/nginx                                                                  Show config files
+
+Nginx as a service
+Download an init script from http://wiki.nginx.org/initscripts
+echo "NGINX_CONF_FILE=/etc/nginx/nginx.conf" > /etc/default/nginx
+echo "DAEMON=/usr/bin/nginx" >> /etc/default/nginx
+cd /etc/init.d/
+sudo chmod +x nginx
+update-rc.d -f nginx defaults
+
+Update Nginx
+nginx -V                                                                          Show version and config args
+install process from previous section, then
+service nginx reload
+
+Nginx Configuration
+
+Contexts - sections,
+First, options for master processes
+http, server - equal apache vhost, location - uri query location
+
+Directives - options, name and value
+
+
+Example
+Use bootstrap's example site with static templates
+Configure:
+/etc/nginx.conf
+events {}
+
+http {
+#add mime.types
+#  types {
+#    text/html html;
+#    text/css css;
+#  }
+  include mime.types
+
+  server {
+    listen 80;
+    server_name <ip or domain name>;
+    root /sites/bootstrap;
+
+# Matching order
+# =  Exact Match
+# ^~ Preferential Prefix
+# ~ & *~ Regex Match
+# no modifier Prefix Match (no modifier)
+
+#    location /greet {                                                              Location from prefix
+#      return 200 "Hello from Nginx location block!"
+#    }
+#    location = /greet {                                                            Location exact match greet
+#      return 200 "Hello from Nginx exact match location block!"
+#    }
+#     location *~ /greet[0-9] {                                                     Location with reg exp without case sensitive
+#       return 200 "Hello from Nginx not case sensitive regex match location block!"
+#     }
+
+    location /downloads {
+
+      root /sites;
+      try_files $uri =404;                                                          Try $uri or show 404
+
+    }
+  }
+}
+service nginx reload                                                                Secure way to reload config
